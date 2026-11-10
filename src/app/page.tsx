@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { transportOptions, zodiacSigns } from "@/lib/horoscope";
 
 type WeatherResult = {
   location: { city: string; distanceKm: number; coordinates: { latitude: number; longitude: number } };
@@ -10,6 +11,9 @@ type WeatherResult = {
     current: Record<string, unknown>;
     hourly: { time?: string[]; temperature_2m?: number[]; precipitation_probability?: number[] };
     daily: Record<string, unknown>;
+  };
+  horoscope: {
+    ranking: Array<{ transport: string; rank: number; happiness: string; positiveEnergy: string; negativeEnergy: string }>;
   };
 };
 
@@ -35,11 +39,18 @@ function displayValue(key: string, value: unknown): string {
 }
 
 export default function Home() {
+  const [transports, setTransports] = useState<string[]>([]);
+  const [zodiacSign, setZodiacSign] = useState("");
+  const [birthYear, setBirthYear] = useState("");
   const [result, setResult] = useState<WeatherResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function loadWeather() {
+    if (transports.length === 0 || !zodiacSign || !birthYear) {
+      setError("Wybierz transport, znak zodiaku i rok urodzenia.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -54,7 +65,7 @@ export default function Home() {
       const response = await fetch("/api/weather", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ip })
+        body: JSON.stringify({ ip, transports, zodiacSign, birthYear: Number(birthYear) })
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error ?? "Nie udało się pobrać pogody.");
@@ -73,8 +84,30 @@ export default function Home() {
     <main className="shell">
       <section className="hero">
         <p className="eyebrow">DZISIAJ · POLSKA</p>
-        <h1>Pogoda blisko Ciebie.</h1>
-        <p className="intro">Oszacujemy Twoją okolicę na podstawie adresu IP i pokażemy pogodę dla najbliższego miasta.</p>
+        <h1>Wybierz swoją trasę.</h1>
+        <p className="intro">Zaznacz transport, podaj znak zodiaku i rok urodzenia. Pogoda z Twojej okolicy pomoże stworzyć rozrywkowy ranking energii podróży.</p>
+        <fieldset className="form-section">
+          <legend>Jak rozważasz podróżować?</legend>
+          <div className="transport-grid">
+            {transportOptions.map((transport) => (
+              <label className="check" key={transport}>
+                <input type="checkbox" checked={transports.includes(transport)} onChange={(event) => setTransports((current) => event.target.checked ? [...current, transport] : current.filter((item) => item !== transport))} />
+                <span>{transport}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div className="form-row">
+          <label>Znak zodiaku
+            <select value={zodiacSign} onChange={(event) => setZodiacSign(event.target.value)}>
+              <option value="">Wybierz znak</option>
+              {zodiacSigns.map((sign) => <option key={sign}>{sign}</option>)}
+            </select>
+          </label>
+          <label>Rok urodzenia
+            <input type="number" min="1900" max={new Date().getFullYear()} value={birthYear} onChange={(event) => setBirthYear(event.target.value)} placeholder="np. 1990" />
+          </label>
+        </div>
         <button className="primary" onClick={loadWeather} disabled={loading}>
           {loading ? "Sprawdzam lokalizację…" : result ? "Odśwież pogodę" : "Pokaż dzisiejszą pogodę"}
         </button>
@@ -108,6 +141,22 @@ export default function Home() {
             {Object.entries(daily).filter(([key]) => key !== "time").map(([key, value]) => (
               <div className="summary-row" key={key}><span>{labels[key] ?? key.replaceAll("_", " ")}</span><b>{Array.isArray(value) ? displayValue(key, value[0]) : displayValue(key, value)}</b></div>
             ))}
+          </div>
+          <div className="summary horoscope">
+            <p className="eyebrow">HOROSKOP PODRÓŻY</p>
+            <h3>Od najlepszej energii do najgorszej</h3>
+            {result.horoscope.ranking.map((item) => (
+              <article className="ranking" key={item.transport}>
+                <div className="rank">{item.rank}</div>
+                <div>
+                  <h4>{item.transport}</h4>
+                  <p><b>Szczęście:</b> {item.happiness}</p>
+                  <p><b>Pozytywna energia:</b> {item.positiveEnergy}</p>
+                  <p><b>Negatywna energia:</b> {item.negativeEnergy}</p>
+                </div>
+              </article>
+            ))}
+            <p className="source">To fikcyjna, rozrywkowa interpretacja — nie jest poradą ani prognozą.</p>
           </div>
           <p className="source">Dane pogodowe: Open-Meteo · współrzędne są orientacyjne</p>
         </section>

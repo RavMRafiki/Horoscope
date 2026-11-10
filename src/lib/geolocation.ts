@@ -29,11 +29,10 @@ export function getClientIp(request: Request): string | null {
   return candidate;
 }
 
-export async function getRequestIp(request: Request): Promise<string | null> {
+export async function getRequestIp(request: Request, body: unknown): Promise<string | null> {
   const serverIp = getClientIp(request);
   if (serverIp) return serverIp;
 
-  const body = await request.json().catch(() => null);
   const browserIp = z.object({ ip: z.string().trim() }).safeParse(body);
   if (!browserIp.success || !isPublicIp(browserIp.data.ip)) return null;
   return browserIp.data.ip;

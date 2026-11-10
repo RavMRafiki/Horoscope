@@ -3,11 +3,23 @@ import { findNearestCity } from "@/lib/cities";
 import { geolocateIp, getRequestIp, hashIp } from "@/lib/geolocation";
 import { prisma } from "@/lib/prisma";
 import { fetchTodayWeather } from "@/lib/weather";
+import { generateHoroscope, transportOptions, zodiacSigns } from "@/lib/horoscope";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const ip = await getRequestIp(request);
+  const body = await request.json().catch(() => null);
+  const input = z.object({
+    ip: z.string().optional(),
+    transports: z.array(z.enum(transportOptions)).min(1).max(transportOptions.length),
+    zodiacSign: z.enum(zodiacSigns),
+    birthYear: z.number().int().min(1900).max(new Date().getFullYear())
+  }).safeParse(body);
+  if (!input.success) {
+    return NextResponse.json({ error: "Wybierz co najmniej jeden środek transportu, znak zodiaku i poprawny rok urodzenia." }, { status: 400 });
+  }
+  const ip = await getRequestIp(request, body);
   if (!ip) {
     return NextResponse.json(
       { error: "Unable to determine a public IP address. Check your internet connection and try again." },
@@ -19,6 +31,13 @@ export async function POST(request: Request) {
     const location = await geolocateIp(ip);
     const nearest = await findNearestCity(location.latitude, location.longitude);
     const weather = await fetchTodayWeather(nearest.city.latitude, nearest.city.longitude);
+    const horoscope = await generateHoroscope({
+      transports: input.data.transports,
+      zodiacSign: input.data.zodiacSign,
+      birthYear: input.data.birthYear,
+      city: nearest.city.city,
+      weather: weather.current
+    });
     const ipHash = await hashIp(ip);
 
     await prisma.weatherRequest.create({
@@ -38,6 +57,10 @@ export async function POST(request: Request) {
         hourlyJson: JSON.stringify(weather.hourly),
         dailyJson: JSON.stringify(weather.daily),
         rawResponseJson: JSON.stringify(weather)
+        ,transportsJson: JSON.stringify(input.data.transports)
+        ,zodiacSign: input.data.zodiacSign
+        ,birthYear: input.data.birthYear
+        ,horoscopeJson: JSON.stringify(horoscope)
       }
     });
 
@@ -56,7 +79,8 @@ export async function POST(request: Request) {
         current: weather.current,
         hourly: weather.hourly,
         daily: weather.daily
-      }
+      },
+      horoscope
     });
   } catch (error) {
     console.error("Weather request failed", error);

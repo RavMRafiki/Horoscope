@@ -9,6 +9,15 @@ h1 { font-size: clamp(42px, 8vw, 78px); line-height: .96; letter-spacing: -.06em
 .primary { background: var(--accent); border: 0; border-radius: 999px; color: #0c3028; cursor: pointer; font-size: 15px; font-weight: 700; padding: 16px 22px; }
 .primary:disabled { cursor: wait; opacity: .65; }
 .privacy, .source { color: #6f7a94; font-size: 12px; line-height: 1.5; margin-top: 20px; }
+.form-section { border: 0; margin: 30px 0 20px; padding: 0; }
+.form-section legend { font-weight: 700; margin-bottom: 14px; }
+.transport-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.check { align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; color: var(--muted); cursor: pointer; display: flex; gap: 9px; padding: 11px; }
+.check:has(input:checked) { border-color: var(--accent); color: var(--ink); }
+.check input { accent-color: var(--accent); }
+.form-row { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-bottom: 26px; }
+.form-row label { color: var(--muted); display: grid; font-size: 13px; gap: 8px; }
+select, .form-row input { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; color: var(--ink); font: inherit; padding: 12px; }
 .error { border: 1px solid #a34a55; color: #ffb8be; margin: 28px 0; padding: 16px; }
 .weather { display: grid; gap: 18px; padding-top: 34px; }
 .location, .current-card, .summary, .metric { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; }
@@ -27,4 +36,10 @@ h2 { font-size: 38px; letter-spacing: -.04em; margin: 0 0 8px; }
 h3 { margin: 0 0 18px; }
 .summary-row { border-top: 1px solid var(--line); display: flex; justify-content: space-between; padding: 12px 0; }
 .summary-row span { margin: 0; }
+.horoscope { margin-top: 2px; }
+.ranking { border-top: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 34px 1fr; padding: 18px 0; }
+.rank { align-items: center; background: var(--accent); border-radius: 50%; color: #0c3028; display: flex; font-weight: 700; height: 30px; justify-content: center; width: 30px; }
+.ranking h4 { font-size: 18px; margin: 0 0 8px; }
+.ranking p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 5px 0; }
+.ranking b { color: var(--ink); }
 @media (max-width: 520px) { .shell { padding: 40px 16px; } .location { gap: 16px; } h2 { font-size: 30px; } .current-card strong { font-size: 60px; } }

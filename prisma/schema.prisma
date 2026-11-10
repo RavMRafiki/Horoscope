@@ -25,6 +25,10 @@ model WeatherRequest {
   hourlyJson         String
   dailyJson          String
   rawResponseJson    String
+  transportsJson     String?
+  zodiacSign         String?
+  birthYear          Int?
+  horoscopeJson      String?
 
   @@index([weatherDate])
   @@index([matchedCity, weatherDate])
