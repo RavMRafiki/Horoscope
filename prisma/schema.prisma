@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model WeatherRequest {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  ipHash             String
+  geolocationProvider String
+  estimatedLatitude  Float
+  estimatedLongitude Float
+  locationAccuracy   Float?
+  matchedCity        String
+  cityLatitude       Float
+  cityLongitude      Float
+  distanceKm         Float
+  weatherDate        String
+  timezone           String
+  currentJson        String
+  hourlyJson         String
+  dailyJson          String
+  rawResponseJson    String
+
+  @@index([weatherDate])
+  @@index([matchedCity, weatherDate])
+  @@index([createdAt])
+}
