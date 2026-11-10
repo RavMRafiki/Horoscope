@@ -18,6 +18,23 @@ h1 { font-size: clamp(42px, 8vw, 78px); line-height: .96; letter-spacing: -.06em
 .form-row { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-bottom: 26px; }
 .form-row label { color: var(--muted); display: grid; font-size: 13px; gap: 8px; }
 select, .form-row input { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; color: var(--ink); font: inherit; padding: 12px; }
+.onboarding { margin-top: 32px; }
+.progress { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .14em; margin-bottom: 28px; }
+.progress i { background: var(--accent); display: block; height: 3px; margin-top: 10px; transition: width .25s ease; }
+.step h2 { font-size: clamp(30px, 5vw, 46px); margin-bottom: 8px; }
+.step-hint { color: var(--muted); margin: 0 0 22px; }
+.icon-grid { display: grid; gap: 10px; }
+.transport-icons { grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); }
+.zodiac-icons { grid-template-columns: repeat(4, 1fr); }
+.icon-choice { align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; color: var(--muted); cursor: pointer; display: flex; flex-direction: column; font: inherit; gap: 9px; justify-content: center; min-height: 100px; padding: 12px 8px; transition: border-color .2s, transform .2s, background .2s; }
+.icon-choice:hover { border-color: #58708f; transform: translateY(-2px); }
+.icon-choice.selected { background: #19352f; border-color: var(--accent); color: var(--ink); }
+.choice-icon { align-items: center; color: var(--accent); display: flex; font-size: 30px; height: 36px; justify-content: center; line-height: 1; }
+.choice-icon.zodiac { font-size: 38px; }
+.step-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
+.secondary { background: transparent; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); cursor: pointer; font: inherit; padding: 15px 20px; }
+.year-step { min-height: 220px; }
+.year-input { background: var(--panel); border: 1px solid var(--accent); border-radius: 12px; color: var(--ink); font-size: 38px; margin-top: 24px; padding: 16px; width: 220px; }
 .error { border: 1px solid #a34a55; color: #ffb8be; margin: 28px 0; padding: 16px; }
 .weather { display: grid; gap: 18px; padding-top: 34px; }
 .location, .current-card, .summary, .metric { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; }
@@ -42,4 +59,4 @@ h3 { margin: 0 0 18px; }
 .ranking h4 { font-size: 18px; margin: 0 0 8px; }
 .ranking p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 5px 0; }
 .ranking b { color: var(--ink); }
-@media (max-width: 520px) { .shell { padding: 40px 16px; } .location { gap: 16px; } h2 { font-size: 30px; } .current-card strong { font-size: 60px; } }
+@media (max-width: 520px) { .shell { padding: 40px 16px; } .location { gap: 16px; } h2 { font-size: 30px; } .current-card strong { font-size: 60px; } .zodiac-icons { grid-template-columns: repeat(3, 1fr); } .transport-icons { grid-template-columns: repeat(2, 1fr); } .step-actions { justify-content: stretch; } .step-actions button { flex: 1; } }

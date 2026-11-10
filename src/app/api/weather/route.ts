@@ -3,10 +3,11 @@ import { findNearestCity } from "@/lib/cities";
 import { geolocateIp, getRequestIp, hashIp } from "@/lib/geolocation";
 import { prisma } from "@/lib/prisma";
 import { fetchTodayWeather } from "@/lib/weather";
-import { generateHoroscope, transportOptions, zodiacSigns } from "@/lib/horoscope";
+import { createFallbackHoroscope, generateHoroscope, transportOptions, zodiacSigns } from "@/lib/horoscope";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -31,13 +32,25 @@ export async function POST(request: Request) {
     const location = await geolocateIp(ip);
     const nearest = await findNearestCity(location.latitude, location.longitude);
     const weather = await fetchTodayWeather(nearest.city.latitude, nearest.city.longitude);
-    const horoscope = await generateHoroscope({
-      transports: input.data.transports,
-      zodiacSign: input.data.zodiacSign,
-      birthYear: input.data.birthYear,
-      city: nearest.city.city,
-      weather: weather.current
-    });
+    let horoscope;
+    try {
+      horoscope = await generateHoroscope({
+        transports: input.data.transports,
+        zodiacSign: input.data.zodiacSign,
+        birthYear: input.data.birthYear,
+        city: nearest.city.city,
+        weather: weather.current
+      });
+    } catch (horoscopeError) {
+      console.warn("Gemini unavailable; using local horoscope fallback", horoscopeError);
+      horoscope = createFallbackHoroscope({
+        transports: input.data.transports,
+        zodiacSign: input.data.zodiacSign,
+        birthYear: input.data.birthYear,
+        city: nearest.city.city,
+        weather: weather.current
+      });
+    }
     const ipHash = await hashIp(ip);
 
     await prisma.weatherRequest.create({

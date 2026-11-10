@@ -31,10 +31,18 @@ export async function fetchTodayWeather(latitude: number, longitude: number) {
       "precipitation_probability_max", "wind_speed_10m_max", "wind_gusts_10m_max", "uv_index_max"
     ].join(",")
   });
-  const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
-    signal: AbortSignal.timeout(8000),
-    next: { revalidate: 900 }
-  });
+  let response: Response;
+  try {
+    response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
+      signal: AbortSignal.timeout(15000),
+      next: { revalidate: 900 }
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      throw new Error("Open-Meteo did not respond within 15 seconds.");
+    }
+    throw error;
+  }
   if (!response.ok) throw new Error(`Weather provider failed with status ${response.status}.`);
   const payload = weatherSchema.parse(await response.json());
   const weatherDate = Array.isArray(payload.daily.time) ? payload.daily.time[0] : null;

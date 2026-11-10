@@ -34,6 +34,39 @@ const horoscopeSchema = z.object({
 
 export type Horoscope = z.infer<typeof horoscopeSchema>;
 
+export function createFallbackHoroscope(input: {
+  transports: string[];
+  zodiacSign: string;
+  birthYear: number;
+  city: string;
+  weather: Record<string, unknown>;
+}): Horoscope {
+  const temperature = typeof input.weather.temperature_2m === "number"
+    ? input.weather.temperature_2m
+    : 15;
+  const precipitation = typeof input.weather.precipitation === "number"
+    ? input.weather.precipitation
+    : 0;
+  const sorted = [...input.transports].sort((a, b) => {
+    const score = (transport: string) => {
+      let value = transport === "pociąg" || transport === "tramwaj" || transport === "metro" ? 3 : 2;
+      if (precipitation > 1 && ["pieszo", "rower", "hulajnoga elektryczna"].includes(transport)) value -= 2;
+      if (temperature < 5 && transport === "samolot") value += 1;
+      return value;
+    };
+    return score(b) - score(a);
+  });
+  return {
+    ranking: sorted.map((transport, index) => ({
+      transport,
+      rank: index + 1,
+      happiness: `Energia ${input.zodiacSign} sprzyja dziś temu wyborowi w okolicach ${input.city}.`,
+      positiveEnergy: `Pogoda daje mu ${temperature >= 15 ? "ciepły" : "spokojny"} impuls.`,
+      negativeEnergy: precipitation > 1 ? "Deszcz może lekko osłabić jego aurę." : "Pośpiech może chwilowo zakłócić dobrą energię."
+    }))
+  };
+}
+
 export async function generateHoroscope(input: {
   transports: string[];
   zodiacSign: string;
@@ -59,24 +92,34 @@ Dla każdego napisz po jednym krótkim zdaniu o szczęściu, pozytywnej energii 
 Zwróć wyłącznie poprawny JSON bez markdownu w formacie:
 {"ranking":[{"transport":"...","rank":1,"happiness":"...","positiveEnergy":"...","negativeEnergy":"..."}]}`;
   let response: Response | undefined;
+  const failures: string[] = [];
   for (const model of models) {
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json", temperature: 0.9 }
-        }),
-        signal: AbortSignal.timeout(15000)
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json", temperature: 0.9 }
+          }),
+          signal: AbortSignal.timeout(8000)
+        }
+      );
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "TimeoutError") {
+        failures.push(`${model}: timeout`);
+        continue;
       }
-    );
-    if (response.ok || ![404, 503].includes(response.status)) break;
+      throw error;
+    }
+    if (response.ok) break;
+    if (![404, 429, 503].includes(response.status)) break;
+    failures.push(`${model}: HTTP ${response.status}`);
   }
   if (!response?.ok) {
-    const providerError = await response?.text();
-    throw new Error(`Gemini failed with status ${response?.status ?? "unknown"} for models: ${models.join(", ")}. ${providerError?.slice(0, 240) ?? ""}`);
+    throw new Error(`Gemini was unavailable for all models (${failures.join(", ")}). Please try again.`);
   }
   const payload = (await response.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;

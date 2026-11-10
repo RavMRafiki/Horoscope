@@ -40,11 +40,19 @@ export async function getRequestIp(request: Request, body: unknown): Promise<str
 
 export async function geolocateIp(ip: string) {
   const baseUrl = process.env.IP_GEOLOCATION_URL ?? "https://ipwho.is";
-  const response = await fetch(`${baseUrl}/${encodeURIComponent(ip)}`, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(5000),
-    cache: "no-store"
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/${encodeURIComponent(ip)}`, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(10000),
+      cache: "no-store"
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      throw new Error("The IP geolocation service did not respond within 10 seconds.");
+    }
+    throw error;
+  }
   if (!response.ok) throw new Error(`IP geolocation failed with status ${response.status}.`);
   const result = responseSchema.parse(await response.json());
   if (result.success === false) throw new Error("IP geolocation provider rejected the address.");

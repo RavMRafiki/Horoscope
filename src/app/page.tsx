@@ -1,6 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import type { IconType } from "react-icons";
+import {
+  FaBicycle, FaBus, FaCar, FaFerry, FaHandshake, FaMotorcycle,
+  FaPersonWalking, FaPlane, FaTaxi, FaTrain, FaTrainSubway, FaTrainTram
+} from "react-icons/fa6";
+import {
+  GiAries, GiAquarius, GiCancer, GiCapricorn, GiGemini, GiLeo,
+  GiLibra, GiPisces, GiSagittarius, GiScorpio, GiTaurus, GiVirgo
+} from "react-icons/gi";
 import { transportOptions, zodiacSigns } from "@/lib/horoscope";
 
 type WeatherResult = {
@@ -32,6 +41,29 @@ const labels: Record<string, string> = {
   uv_index_max: "Maks. UV"
 };
 
+const transportIcons: Record<string, IconType> = {
+  pieszo: FaPersonWalking,
+  rower: FaBicycle,
+  "hulajnoga elektryczna": FaMotorcycle,
+  motocykl: FaMotorcycle,
+  "skuter lub motorower": FaMotorcycle,
+  samochód: FaCar,
+  taksówka: FaTaxi,
+  "car-sharing": FaHandshake,
+  autobus: FaBus,
+  tramwaj: FaTrainTram,
+  metro: FaTrainSubway,
+  pociąg: FaTrain,
+  prom: FaFerry,
+  samolot: FaPlane
+};
+
+const zodiacIcons: Record<string, IconType> = {
+  Baran: GiAries, Byk: GiTaurus, Bliźnięta: GiGemini, Rak: GiCancer, Lew: GiLeo, Panna: GiVirgo,
+  Waga: GiLibra, Skorpion: GiScorpio, Strzelec: GiSagittarius, Koziorożec: GiCapricorn,
+  Wodnik: GiAquarius, Ryby: GiPisces
+};
+
 function displayValue(key: string, value: unknown): string {
   if (typeof value !== "number" && typeof value !== "string") return "—";
   const suffix = key.includes("temperature") ? "°C" : key.includes("humidity") || key.includes("probability") ? "%" : "";
@@ -42,6 +74,7 @@ export default function Home() {
   const [transports, setTransports] = useState<string[]>([]);
   const [zodiacSign, setZodiacSign] = useState("");
   const [birthYear, setBirthYear] = useState("");
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const [result, setResult] = useState<WeatherResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,7 +101,7 @@ export default function Home() {
         body: JSON.stringify({ ip, transports, zodiacSign, birthYear: Number(birthYear) })
       });
       const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Nie udało się pobrać pogody.");
+      if (!response.ok) throw new Error(body.error ?? "Nie udało się pobrać pogody. Spróbuj ponownie.");
       setResult(body);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Wystąpił nieznany błąd.");
@@ -79,38 +112,79 @@ export default function Home() {
 
   const current = result?.weather.current;
   const daily = result?.weather.daily;
+  const onboardingComplete = transports.length > 0 && Boolean(zodiacSign) && Boolean(birthYear);
+
+  function nextStep() {
+    setError("");
+    if (onboardingStep === 0 && transports.length === 0) {
+      setError("Wybierz przynajmniej jeden środek transportu.");
+      return;
+    }
+    if (onboardingStep === 1 && !zodiacSign) {
+      setError("Wybierz swój znak zodiaku.");
+      return;
+    }
+    setOnboardingStep((step) => Math.min(step + 1, 2));
+  }
 
   return (
     <main className="shell">
       <section className="hero">
         <p className="eyebrow">DZISIAJ · POLSKA</p>
-        <h1>Wybierz swoją trasę.</h1>
-        <p className="intro">Zaznacz transport, podaj znak zodiaku i rok urodzenia. Pogoda z Twojej okolicy pomoże stworzyć rozrywkowy ranking energii podróży.</p>
-        <fieldset className="form-section">
-          <legend>Jak rozważasz podróżować?</legend>
-          <div className="transport-grid">
-            {transportOptions.map((transport) => (
-              <label className="check" key={transport}>
-                <input type="checkbox" checked={transports.includes(transport)} onChange={(event) => setTransports((current) => event.target.checked ? [...current, transport] : current.filter((item) => item !== transport))} />
-                <span>{transport}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <div className="form-row">
-          <label>Znak zodiaku
-            <select value={zodiacSign} onChange={(event) => setZodiacSign(event.target.value)}>
-              <option value="">Wybierz znak</option>
-              {zodiacSigns.map((sign) => <option key={sign}>{sign}</option>)}
-            </select>
-          </label>
-          <label>Rok urodzenia
-            <input type="number" min="1900" max={new Date().getFullYear()} value={birthYear} onChange={(event) => setBirthYear(event.target.value)} placeholder="np. 1990" />
-          </label>
-        </div>
-        <button className="primary" onClick={loadWeather} disabled={loading}>
-          {loading ? "Sprawdzam lokalizację…" : result ? "Odśwież pogodę" : "Pokaż dzisiejszą pogodę"}
-        </button>
+        {!result && <p className="intro">Przejdziemy przez trzy krótkie kroki. Pogoda z Twojej okolicy pomoże stworzyć rozrywkowy ranking energii podróży.</p>}
+        {!result && (
+          <section className="onboarding" aria-label="Konfiguracja horoskopu">
+            <div className="progress"><span>KROK {onboardingStep + 1} Z 3</span><i style={{ width: `${((onboardingStep + 1) / 3) * 100}%` }} /></div>
+            {onboardingStep === 0 && (
+              <div className="step">
+                <h2>Jak rozważasz podróżować?</h2>
+                <p className="step-hint">Możesz wybrać kilka opcji.</p>
+                <div className="icon-grid transport-icons">
+                  {transportOptions.map((transport) => (
+                    (() => {
+                      const Icon = transportIcons[transport];
+                      return (
+                        <button className={`icon-choice ${transports.includes(transport) ? "selected" : ""}`} key={transport} onClick={() => setTransports((current) => current.includes(transport) ? current.filter((item) => item !== transport) : [...current, transport])} aria-pressed={transports.includes(transport)}>
+                          <span className="choice-icon"><Icon aria-hidden="true" /></span><span>{transport}</span>
+                        </button>
+                      );
+                    })()
+                  ))}
+                </div>
+              </div>
+            )}
+            {onboardingStep === 1 && (
+              <div className="step">
+                <h2>Jaki jest Twój znak?</h2>
+                <p className="step-hint">Wybierz znak zodiaku.</p>
+                <div className="icon-grid zodiac-icons">
+                  {zodiacSigns.map((sign) => (
+                    (() => {
+                      const Icon = zodiacIcons[sign];
+                      return (
+                        <button className={`icon-choice ${zodiacSign === sign ? "selected" : ""}`} key={sign} onClick={() => setZodiacSign(sign)} aria-pressed={zodiacSign === sign}>
+                          <span className="choice-icon zodiac"><Icon aria-hidden="true" /></span><span>{sign}</span>
+                        </button>
+                      );
+                    })()
+                  ))}
+                </div>
+              </div>
+            )}
+            {onboardingStep === 2 && (
+              <div className="step year-step">
+                <h2>W którym roku się urodziłeś?</h2>
+                <p className="step-hint">Ta informacja pomaga nadać horoskopowi osobisty charakter.</p>
+                <input className="year-input" type="number" min="1900" max={new Date().getFullYear()} value={birthYear} onChange={(event) => setBirthYear(event.target.value)} placeholder="1990" autoFocus />
+              </div>
+            )}
+            <div className="step-actions">
+              {onboardingStep > 0 && <button className="secondary" onClick={() => { setError(""); setOnboardingStep((step) => step - 1); }}>Wstecz</button>}
+              {onboardingStep < 2 ? <button className="primary" onClick={nextStep}>Dalej</button> : <button className="primary" onClick={loadWeather} disabled={loading || !onboardingComplete}>{loading ? "Sprawdzam lokalizację…" : "Odkryj swoją energię"}</button>}
+            </div>
+          </section>
+        )}
+        {result && <button className="primary" onClick={() => { setResult(null); setOnboardingStep(0); }} disabled={loading}>Zmień wybór i sprawdź ponownie</button>}
         <p className="privacy">Lokalizacja jest przybliżona. Nie zapisujemy Twojego adresu IP, tylko jego anonimowy skrót.</p>
       </section>
 
