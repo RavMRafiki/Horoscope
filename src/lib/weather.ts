@@ -49,28 +49,65 @@ export async function fetchTodayWeather(latitude: number, longitude: number) {
     timezone: "auto",
     forecast_days: "1",
     current: [
-      "temperature_2m", "relative_humidity_2m", "apparent_temperature", "is_day",
-      "precipitation", "rain", "showers", "snowfall", "weather_code", "cloud_cover",
-      "surface_pressure", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m"
+      "temperature_2m",
+      "relative_humidity_2m",
+      "apparent_temperature",
+      "is_day",
+      "precipitation",
+      "rain",
+      "showers",
+      "snowfall",
+      "weather_code",
+      "cloud_cover",
+      "surface_pressure",
+      "wind_speed_10m",
+      "wind_direction_10m",
+      "wind_gusts_10m",
     ].join(","),
     hourly: [
-      "temperature_2m", "relative_humidity_2m", "dew_point_2m", "apparent_temperature",
-      "precipitation_probability", "precipitation", "rain", "showers", "snowfall",
-      "weather_code", "cloud_cover", "visibility", "surface_pressure", "wind_speed_10m",
-      "wind_direction_10m", "wind_gusts_10m", "uv_index"
+      "temperature_2m",
+      "relative_humidity_2m",
+      "dew_point_2m",
+      "apparent_temperature",
+      "precipitation_probability",
+      "precipitation",
+      "rain",
+      "showers",
+      "snowfall",
+      "weather_code",
+      "cloud_cover",
+      "visibility",
+      "surface_pressure",
+      "wind_speed_10m",
+      "wind_direction_10m",
+      "wind_gusts_10m",
+      "uv_index",
     ].join(","),
     daily: [
-      "weather_code", "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max",
-      "apparent_temperature_min", "sunrise", "sunset", "daylight_duration",
-      "sunshine_duration", "precipitation_sum", "rain_sum", "showers_sum", "snowfall_sum",
-      "precipitation_probability_max", "wind_speed_10m_max", "wind_gusts_10m_max", "uv_index_max"
-    ].join(",")
+      "weather_code",
+      "temperature_2m_max",
+      "temperature_2m_min",
+      "apparent_temperature_max",
+      "apparent_temperature_min",
+      "sunrise",
+      "sunset",
+      "daylight_duration",
+      "sunshine_duration",
+      "precipitation_sum",
+      "rain_sum",
+      "showers_sum",
+      "snowfall_sum",
+      "precipitation_probability_max",
+      "wind_speed_10m_max",
+      "wind_gusts_10m_max",
+      "uv_index_max",
+    ].join(","),
   });
   let response: Response;
   try {
     response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
       signal: AbortSignal.timeout(15000),
-      next: { revalidate: 900 }
+      next: { revalidate: 900 },
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === "TimeoutError") {
@@ -78,15 +115,25 @@ export async function fetchTodayWeather(latitude: number, longitude: number) {
     }
     throw error;
   }
-  if (!response.ok) throw new Error(`Weather provider failed with status ${response.status}.`);
+  if (!response.ok)
+    throw new Error(`Weather provider failed with status ${response.status}.`);
   const payload = weatherSchema.parse(await response.json());
-  const weatherDate = Array.isArray(payload.daily.time) ? payload.daily.time[0] : null;
-  if (typeof weatherDate !== "string") throw new Error("Weather provider returned no local date.");
-  return { ...payload, weatherDate } as typeof payload & { weatherDate: string };
+  const weatherDate = Array.isArray(payload.daily.time)
+    ? payload.daily.time[0]
+    : null;
+  if (typeof weatherDate !== "string")
+    throw new Error("Weather provider returned no local date.");
+  return { ...payload, weatherDate } as typeof payload & {
+    weatherDate: string;
+  };
 }
 
 export type TodayWeather = Awaited<ReturnType<typeof fetchTodayWeather>>;
-export type TransportWeather = Pick<TodayWeather, "current" | "hourly" | "daily"> & OpenMeteoResponse;
+export type TransportWeather = Pick<
+  TodayWeather,
+  "current" | "hourly" | "daily"
+> &
+  OpenMeteoResponse;
 
 export type CachedCityWeather = {
   id: string;
@@ -133,7 +180,9 @@ function toCached(record: {
   };
 }
 
-async function findTodayCityWeather(city: string): Promise<CachedCityWeather | null> {
+async function findTodayCityWeather(
+  city: string,
+): Promise<CachedCityWeather | null> {
   const latest = await prisma.cityWeather.findFirst({
     where: { city },
     orderBy: { fetchedAt: "desc" },
@@ -143,7 +192,11 @@ async function findTodayCityWeather(city: string): Promise<CachedCityWeather | n
   return toCached(latest);
 }
 
-export async function getOrFetchCityWeather(city: string, latitude: number, longitude: number): Promise<CachedCityWeather> {
+export async function getOrFetchCityWeather(
+  city: string,
+  latitude: number,
+  longitude: number,
+): Promise<CachedCityWeather> {
   const cached = await findTodayCityWeather(city);
   if (cached) return cached;
 

@@ -190,7 +190,11 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
       const text = payload.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text) {
         try {
-          return { horoscope: horoscopeSchema.parse(JSON.parse(text)), source: "gemini", model };
+          return {
+            horoscope: horoscopeSchema.parse(JSON.parse(text)),
+            source: "gemini",
+            model,
+          };
         } catch {
           failures.push(`${model}: invalid response`);
         }
@@ -239,5 +243,7 @@ export async function buildHoroscopeRequestKey(input: {
   });
   const data = new TextEncoder().encode(payload);
   const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
 }

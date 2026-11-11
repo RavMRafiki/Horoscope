@@ -12,7 +12,7 @@ let citiesPromise: Promise<City[]> | undefined;
 async function loadCities(): Promise<City[]> {
   const file = await readFile(
     path.join(process.cwd(), "polish_cities_coordinates.csv"),
-    "utf8"
+    "utf8",
   );
   const rows = file.trim().split(/\r?\n/);
   const [header, ...data] = rows;
@@ -24,7 +24,11 @@ async function loadCities(): Promise<City[]> {
     const [city, latitude, longitude] = row.split(",");
     const parsedLatitude = Number(latitude);
     const parsedLongitude = Number(longitude);
-    if (!city || !Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) {
+    if (
+      !city ||
+      !Number.isFinite(parsedLatitude) ||
+      !Number.isFinite(parsedLongitude)
+    ) {
       throw new Error(`City CSV row ${index + 2} is invalid.`);
     }
     return { city, latitude: parsedLatitude, longitude: parsedLongitude };
@@ -46,7 +50,7 @@ export function distanceInKm(
   latitude1: number,
   longitude1: number,
   latitude2: number,
-  longitude2: number
+  longitude2: number,
 ): number {
   const earthRadiusKm = 6371;
   const latitudeDelta = toRadians(latitude2 - latitude1);
@@ -61,8 +65,16 @@ export function distanceInKm(
 
 export async function findNearestCity(latitude: number, longitude: number) {
   const cities = await getCities();
-  return cities.reduce((nearest, city) => {
-    const distanceKm = distanceInKm(latitude, longitude, city.latitude, city.longitude);
-    return distanceKm < nearest.distanceKm ? { city, distanceKm } : nearest;
-  }, { city: cities[0], distanceKm: Number.POSITIVE_INFINITY });
+  return cities.reduce(
+    (nearest, city) => {
+      const distanceKm = distanceInKm(
+        latitude,
+        longitude,
+        city.latitude,
+        city.longitude,
+      );
+      return distanceKm < nearest.distanceKm ? { city, distanceKm } : nearest;
+    },
+    { city: cities[0], distanceKm: Number.POSITIVE_INFINITY },
+  );
 }

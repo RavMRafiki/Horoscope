@@ -32,10 +32,15 @@ async function getOrCreateExpertResult(input: {
 }): Promise<{ id: string; result: Recommendation }> {
   const transportsKey = buildTransportsKey(input.transports);
   const existing = await prisma.expertResult.findUnique({
-    where: { weatherId_transportsKey: { weatherId: input.weatherId, transportsKey } },
+    where: {
+      weatherId_transportsKey: { weatherId: input.weatherId, transportsKey },
+    },
   });
   if (existing) {
-    return { id: existing.id, result: JSON.parse(existing.resultJson) as Recommendation };
+    return {
+      id: existing.id,
+      result: JSON.parse(existing.resultJson) as Recommendation,
+    };
   }
 
   const result = suggestTransport(
@@ -59,9 +64,18 @@ async function getOrCreateExpertResult(input: {
     const code = (error as { code?: string }).code;
     if (code === "P2002") {
       const raced = await prisma.expertResult.findUnique({
-        where: { weatherId_transportsKey: { weatherId: input.weatherId, transportsKey } },
+        where: {
+          weatherId_transportsKey: {
+            weatherId: input.weatherId,
+            transportsKey,
+          },
+        },
       });
-      if (raced) return { id: raced.id, result: JSON.parse(raced.resultJson) as Recommendation };
+      if (raced)
+        return {
+          id: raced.id,
+          result: JSON.parse(raced.resultJson) as Recommendation,
+        };
     }
     throw error;
   }
@@ -77,7 +91,8 @@ async function getOrCreateLlmHoroscope(input: {
   city: string;
   weatherCurrent: CachedCityWeather["current"];
 }): Promise<Horoscope> {
-  const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.1-flash-lite";
+  const configuredModel =
+    process.env.GEMINI_MODEL?.trim() || "gemini-3.1-flash-lite";
   const requestKey = await buildHoroscopeRequestKey({
     weatherId: input.weatherId,
     expertId: input.expertId,
@@ -89,7 +104,9 @@ async function getOrCreateLlmHoroscope(input: {
     model: configuredModel,
   });
 
-  const existing = await prisma.llmHoroscope.findUnique({ where: { requestKey } });
+  const existing = await prisma.llmHoroscope.findUnique({
+    where: { requestKey },
+  });
   if (existing) {
     return JSON.parse(existing.horoscopeJson) as Horoscope;
   }
@@ -121,7 +138,9 @@ async function getOrCreateLlmHoroscope(input: {
   } catch (error) {
     const code = (error as { code?: string }).code;
     if (code === "P2002") {
-      const raced = await prisma.llmHoroscope.findUnique({ where: { requestKey } });
+      const raced = await prisma.llmHoroscope.findUnique({
+        where: { requestKey },
+      });
       if (raced) return JSON.parse(raced.horoscopeJson) as Horoscope;
     } else {
       throw error;
@@ -166,7 +185,10 @@ export async function POST(request: Request) {
 
   try {
     const location = await getOrCreateIpLocation(ip);
-    const nearest = await findNearestCity(location.latitude, location.longitude);
+    const nearest = await findNearestCity(
+      location.latitude,
+      location.longitude,
+    );
     const weather = await getOrFetchCityWeather(
       nearest.city.city,
       nearest.city.latitude,
@@ -175,7 +197,8 @@ export async function POST(request: Request) {
 
     const expert = await getOrCreateExpertResult({
       weatherId: weather.id,
-      transports: input.data.transports as readonly TransportMode[] as TransportMode[],
+      transports: input.data
+        .transports as readonly TransportMode[] as TransportMode[],
       weather,
     });
     const transportExpert = expert.result;
@@ -183,7 +206,9 @@ export async function POST(request: Request) {
       transportExpert.suggestions.length > 0
         ? transportExpert.suggestions
         : transportExpert.ranking;
-    const filteredTransports = filteredAssessments.map((assessment) => assessment.mode);
+    const filteredTransports = filteredAssessments.map(
+      (assessment) => assessment.mode,
+    );
 
     const horoscope = await getOrCreateLlmHoroscope({
       weatherId: weather.id,
