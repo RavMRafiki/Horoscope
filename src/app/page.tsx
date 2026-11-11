@@ -79,6 +79,23 @@ const zodiacIcons: Record<string, IconType> = {
   Ryby: GiPisces,
 };
 
+const transportHeroImages: Record<string, string> = {
+  pieszo: "/images/transport/pieszo.png",
+  rower: "/images/transport/rower.png",
+  "hulajnoga elektryczna": "/images/transport/hulajnoga%20elektryczna.png",
+  motocykl: "/images/transport/motocykl.png",
+  "skuter lub motorower": "/images/transport/kuter%20lub%20motorower.png",
+  samochód: "/images/transport/samoch%C3%B3d.png",
+  taksówka: "/images/transport/taks%C3%B3wka.png",
+  "car-sharing": "/images/transport/car-sharing.png",
+  autobus: "/images/transport/autobus.png",
+  tramwaj: "/images/transport/tramwaj.png",
+  metro: "/images/transport/metro.png",
+  pociąg: "/images/transport/poci%C4%85g.png",
+  prom: "/images/transport/prom.png",
+  samolot: "/images/transport/samolot.png",
+};
+
 function toRoman(num: number): string {
   const map: Array<[number, string]> = [
     [10, "X"],
@@ -239,7 +256,12 @@ export default function Home() {
                       <div className="tarot-stars">☽ ⚝ ☾</div>
                     </div>
 
-                    <div className="tarot-hero">
+                    <div
+                      className="tarot-hero"
+                      style={{
+                        ["--hero-image" as any]: `url("${transportHeroImages[item.transport] ?? transportHeroImages.samochód}")`,
+                      }}
+                    >
                       <div className="tarot-icon-wrap">
                         <Icon aria-hidden="true" />
                       </div>
