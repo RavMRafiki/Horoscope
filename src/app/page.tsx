@@ -291,7 +291,8 @@ export default function Home() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">ENERGIA PODRÓŻY</p>
+        <p className="eyebrow">✦ Energia Podróży ✦</p>
+        <h1 className="arcana-page-title">URBAN ARCANA</h1>
         <p className="intro">
           Przejdziemy przez trzy krótkie kroki, aby stworzyć rozrywkowy ranking
           energii podróży.
