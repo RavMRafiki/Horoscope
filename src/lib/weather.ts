@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { OpenMeteoResponse } from "./transport-expert";
+import { prisma } from "@/lib/prisma";
 
 const weatherSchema = z.object({
   timezone: z.string(),
@@ -86,3 +87,84 @@ export async function fetchTodayWeather(latitude: number, longitude: number) {
 
 export type TodayWeather = Awaited<ReturnType<typeof fetchTodayWeather>>;
 export type TransportWeather = Pick<TodayWeather, "current" | "hourly" | "daily"> & OpenMeteoResponse;
+
+export type CachedCityWeather = {
+  id: string;
+  city: string;
+  cityLatitude: number;
+  cityLongitude: number;
+  weatherDate: string;
+  timezone: string;
+  current: TodayWeather["current"];
+  hourly: TodayWeather["hourly"];
+  daily: TodayWeather["daily"];
+};
+
+function todayInTimezone(timezone: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+function toCached(record: {
+  id: string;
+  city: string;
+  cityLatitude: number;
+  cityLongitude: number;
+  weatherDate: string;
+  timezone: string;
+  currentJson: string;
+  hourlyJson: string;
+  dailyJson: string;
+}): CachedCityWeather {
+  return {
+    id: record.id,
+    city: record.city,
+    cityLatitude: record.cityLatitude,
+    cityLongitude: record.cityLongitude,
+    weatherDate: record.weatherDate,
+    timezone: record.timezone,
+    current: JSON.parse(record.currentJson) as TodayWeather["current"],
+    hourly: JSON.parse(record.hourlyJson) as TodayWeather["hourly"],
+    daily: JSON.parse(record.dailyJson) as TodayWeather["daily"],
+  };
+}
+
+async function findTodayCityWeather(city: string): Promise<CachedCityWeather | null> {
+  const latest = await prisma.cityWeather.findFirst({
+    where: { city },
+    orderBy: { fetchedAt: "desc" },
+  });
+  if (!latest) return null;
+  if (latest.weatherDate !== todayInTimezone(latest.timezone)) return null;
+  return toCached(latest);
+}
+
+export async function getOrFetchCityWeather(city: string, latitude: number, longitude: number): Promise<CachedCityWeather> {
+  const cached = await findTodayCityWeather(city);
+  if (cached) return cached;
+
+  const fetched = await fetchTodayWeather(latitude, longitude);
+  const data = {
+    city,
+    cityLatitude: latitude,
+    cityLongitude: longitude,
+    weatherDate: fetched.weatherDate,
+    timezone: fetched.timezone,
+    currentJson: JSON.stringify(fetched.current),
+    hourlyJson: JSON.stringify(fetched.hourly),
+    dailyJson: JSON.stringify(fetched.daily),
+    rawResponseJson: JSON.stringify(fetched),
+  };
+
+  const record = await prisma.cityWeather.upsert({
+    where: { city_weatherDate: { city, weatherDate: fetched.weatherDate } },
+    update: data,
+    create: data,
+  });
+
+  return toCached(record);
+}

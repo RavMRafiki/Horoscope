@@ -1,19 +1,135 @@
 import { NextResponse } from "next/server";
 import { findNearestCity } from "@/lib/cities";
-import { geolocateIp, getRequestIp, hashIp } from "@/lib/geolocation";
+import { getOrCreateIpLocation, getRequestIp } from "@/lib/geolocation";
 import { prisma } from "@/lib/prisma";
-import { fetchTodayWeather } from "@/lib/weather";
+import { getOrFetchCityWeather, type CachedCityWeather } from "@/lib/weather";
 import {
-  createFallbackHoroscope,
+  buildHoroscopeRequestKey,
   generateHoroscope,
   transportOptions,
   zodiacSigns,
+  type Horoscope,
 } from "@/lib/horoscope";
-import { suggestTransport } from "@/lib/transport-expert";
+import {
+  suggestTransport,
+  type ModeAssessment,
+  type Recommendation,
+  type TransportMode,
+} from "@/lib/transport-expert";
 import { z } from "zod";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+function buildTransportsKey(transports: string[]): string {
+  return [...transports].sort().join("|");
+}
+
+async function getOrCreateExpertResult(input: {
+  weatherId: string;
+  transports: TransportMode[];
+  weather: CachedCityWeather;
+}): Promise<{ id: string; result: Recommendation }> {
+  const transportsKey = buildTransportsKey(input.transports);
+  const existing = await prisma.expertResult.findUnique({
+    where: { weatherId_transportsKey: { weatherId: input.weatherId, transportsKey } },
+  });
+  if (existing) {
+    return { id: existing.id, result: JSON.parse(existing.resultJson) as Recommendation };
+  }
+
+  const result = suggestTransport(
+    {
+      current: input.weather.current,
+      hourly: input.weather.hourly,
+      daily: input.weather.daily,
+    },
+    { modes: input.transports },
+  );
+  const data = {
+    weatherId: input.weatherId,
+    transportsKey,
+    transportsInputJson: JSON.stringify(input.transports),
+    resultJson: JSON.stringify(result),
+  };
+  try {
+    const created = await prisma.expertResult.create({ data });
+    return { id: created.id, result };
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "P2002") {
+      const raced = await prisma.expertResult.findUnique({
+        where: { weatherId_transportsKey: { weatherId: input.weatherId, transportsKey } },
+      });
+      if (raced) return { id: raced.id, result: JSON.parse(raced.resultJson) as Recommendation };
+    }
+    throw error;
+  }
+}
+
+async function getOrCreateLlmHoroscope(input: {
+  weatherId: string;
+  expertId: string;
+  transports: string[];
+  transportAssessments: ModeAssessment[];
+  zodiacSign: string;
+  birthYear: number;
+  city: string;
+  weatherCurrent: CachedCityWeather["current"];
+}): Promise<Horoscope> {
+  const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.1-flash-lite";
+  const requestKey = await buildHoroscopeRequestKey({
+    weatherId: input.weatherId,
+    expertId: input.expertId,
+    transports: input.transports,
+    transportAssessments: input.transportAssessments,
+    zodiacSign: input.zodiacSign,
+    birthYear: input.birthYear,
+    city: input.city,
+    model: configuredModel,
+  });
+
+  const existing = await prisma.llmHoroscope.findUnique({ where: { requestKey } });
+  if (existing) {
+    return JSON.parse(existing.horoscopeJson) as Horoscope;
+  }
+
+  const generated = await generateHoroscope({
+    transports: input.transports,
+    transportAssessments: input.transportAssessments,
+    zodiacSign: input.zodiacSign,
+    birthYear: input.birthYear,
+    city: input.city,
+    weather: input.weatherCurrent as unknown as Record<string, unknown>,
+  });
+
+  const data = {
+    weatherId: input.weatherId,
+    expertId: input.expertId,
+    zodiacSign: input.zodiacSign,
+    birthYear: input.birthYear,
+    requestKey,
+    source: generated.source,
+    model: generated.model,
+    transportsJson: JSON.stringify(input.transports),
+    assessmentsJson: JSON.stringify(input.transportAssessments),
+    horoscopeJson: JSON.stringify(generated.horoscope),
+  };
+
+  try {
+    await prisma.llmHoroscope.create({ data });
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "P2002") {
+      const raced = await prisma.llmHoroscope.findUnique({ where: { requestKey } });
+      if (raced) return JSON.parse(raced.horoscopeJson) as Horoscope;
+    } else {
+      throw error;
+    }
+  }
+
+  return generated.horoscope;
+}
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -49,76 +165,35 @@ export async function POST(request: Request) {
   }
 
   try {
-    const location = await geolocateIp(ip);
-    const nearest = await findNearestCity(
-      location.latitude,
-      location.longitude,
-    );
-    const weather = await fetchTodayWeather(
+    const location = await getOrCreateIpLocation(ip);
+    const nearest = await findNearestCity(location.latitude, location.longitude);
+    const weather = await getOrFetchCityWeather(
+      nearest.city.city,
       nearest.city.latitude,
       nearest.city.longitude,
     );
-    const transportExpert = suggestTransport(
-      {
-        current: weather.current,
-        hourly: weather.hourly,
-        daily: weather.daily,
-      },
-      { modes: input.data.transports },
-    );
+
+    const expert = await getOrCreateExpertResult({
+      weatherId: weather.id,
+      transports: input.data.transports as readonly TransportMode[] as TransportMode[],
+      weather,
+    });
+    const transportExpert = expert.result;
     const filteredAssessments =
       transportExpert.suggestions.length > 0
         ? transportExpert.suggestions
         : transportExpert.ranking;
     const filteredTransports = filteredAssessments.map((assessment) => assessment.mode);
-    let horoscope;
-    try {
-      horoscope = await generateHoroscope({
-        transports: filteredTransports,
-        transportAssessments: filteredAssessments,
-        zodiacSign: input.data.zodiacSign,
-        birthYear: input.data.birthYear,
-        city: nearest.city.city,
-        weather: weather.current,
-      });
-    } catch (horoscopeError) {
-      console.warn(
-        "Gemini unavailable; using local horoscope fallback",
-        horoscopeError,
-      );
-      horoscope = createFallbackHoroscope({
-        transports: filteredTransports,
-        zodiacSign: input.data.zodiacSign,
-        birthYear: input.data.birthYear,
-        city: nearest.city.city,
-        weather: weather.current,
-      });
-    }
-    const ipHash = await hashIp(ip);
 
-    await prisma.weatherRequest.create({
-      data: {
-        ipHash,
-        geolocationProvider:
-          process.env.IP_GEOLOCATION_URL ?? "https://ipwho.is",
-        estimatedLatitude: location.latitude,
-        estimatedLongitude: location.longitude,
-        locationAccuracy: location.accuracy,
-        matchedCity: nearest.city.city,
-        cityLatitude: nearest.city.latitude,
-        cityLongitude: nearest.city.longitude,
-        distanceKm: nearest.distanceKm,
-        weatherDate: weather.weatherDate,
-        timezone: weather.timezone,
-        currentJson: JSON.stringify(weather.current),
-        hourlyJson: JSON.stringify(weather.hourly),
-        dailyJson: JSON.stringify(weather.daily),
-        rawResponseJson: JSON.stringify(weather),
-        transportsJson: JSON.stringify(input.data.transports),
-        zodiacSign: input.data.zodiacSign,
-        birthYear: input.data.birthYear,
-        horoscopeJson: JSON.stringify(horoscope),
-      },
+    const horoscope = await getOrCreateLlmHoroscope({
+      weatherId: weather.id,
+      expertId: expert.id,
+      transports: filteredTransports,
+      transportAssessments: filteredAssessments,
+      zodiacSign: input.data.zodiacSign,
+      birthYear: input.data.birthYear,
+      city: nearest.city.city,
+      weatherCurrent: weather.current,
     });
 
     return NextResponse.json({

@@ -103,6 +103,12 @@ export function createFallbackHoroscope(input: {
   };
 }
 
+export type GeneratedHoroscopeResult = {
+  horoscope: Horoscope;
+  source: "gemini" | "fallback";
+  model: string | null;
+};
+
 export async function generateHoroscope(input: {
   transports: string[];
   transportAssessments: ModeAssessment[];
@@ -110,9 +116,15 @@ export async function generateHoroscope(input: {
   birthYear: number;
   city: string;
   weather: Record<string, unknown>;
-}): Promise<Horoscope> {
+}): Promise<GeneratedHoroscopeResult> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured.");
+  if (!apiKey) {
+    return {
+      horoscope: createFallbackHoroscope(input),
+      source: "fallback",
+      model: null,
+    };
+  }
   const configuredModel =
     process.env.GEMINI_MODEL?.trim() || "gemini-3.1-flash-lite";
   const models = [
@@ -171,20 +183,61 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
       }
       throw error;
     }
-    if (response.ok) break;
-    if (![404, 429, 503].includes(response.status)) break;
+    if (response.ok) {
+      const payload = (await response.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      };
+      const text = payload.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        try {
+          return { horoscope: horoscopeSchema.parse(JSON.parse(text)), source: "gemini", model };
+        } catch {
+          failures.push(`${model}: invalid response`);
+        }
+      } else {
+        failures.push(`${model}: empty response`);
+      }
+      response = undefined;
+      continue;
+    }
+    if (![404, 429, 503].includes(response.status)) {
+      failures.push(`${model}: HTTP ${response.status}`);
+      break;
+    }
     failures.push(`${model}: HTTP ${response.status}`);
   }
-  if (!response?.ok) {
-    throw new Error(
-      `Gemini was unavailable for all models (${failures.join(", ")}). Please try again.`,
-    );
-  }
-  const payload = (await response.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  console.warn(
+    "Gemini unavailable; using local horoscope fallback",
+    failures.join(", "),
+  );
+  return {
+    horoscope: createFallbackHoroscope(input),
+    source: "fallback",
+    model: null,
   };
-  console.log("Gemini response payload:", JSON.stringify(payload, null, 2));
-  const text = payload.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini returned no horoscope.");
-  return horoscopeSchema.parse(JSON.parse(text));
+}
+
+export async function buildHoroscopeRequestKey(input: {
+  weatherId: string;
+  expertId: string;
+  transports: string[];
+  transportAssessments: ModeAssessment[];
+  zodiacSign: string;
+  birthYear: number;
+  city: string;
+  model: string | null;
+}): Promise<string> {
+  const payload = JSON.stringify({
+    weatherId: input.weatherId,
+    expertId: input.expertId,
+    transports: input.transports,
+    transportAssessments: input.transportAssessments,
+    zodiacSign: input.zodiacSign,
+    birthYear: input.birthYear,
+    city: input.city,
+    model: input.model,
+  });
+  const data = new TextEncoder().encode(payload);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }

@@ -7,30 +7,69 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model WeatherRequest {
-  id                 String   @id @default(cuid())
-  createdAt          DateTime @default(now())
-  ipHash             String
-  geolocationProvider String
-  estimatedLatitude  Float
-  estimatedLongitude Float
-  locationAccuracy   Float?
-  matchedCity        String
-  cityLatitude       Float
-  cityLongitude      Float
-  distanceKm         Float
-  weatherDate        String
-  timezone           String
-  currentJson        String
-  hourlyJson         String
-  dailyJson          String
-  rawResponseJson    String
-  transportsJson     String?
-  zodiacSign         String?
-  birthYear          Int?
-  horoscopeJson      String?
+model IpLocation {
+  id        String   @id @default(cuid())
+  ipHash    String
+  provider  String
+  latitude  Float
+  longitude Float
+  accuracy  Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([weatherDate])
-  @@index([matchedCity, weatherDate])
-  @@index([createdAt])
+  @@unique([ipHash, provider])
+  @@index([ipHash])
+}
+
+model CityWeather {
+  id              String   @id @default(cuid())
+  city            String
+  cityLatitude    Float
+  cityLongitude   Float
+  weatherDate     String
+  timezone        String
+  currentJson     String
+  hourlyJson      String
+  dailyJson       String
+  rawResponseJson String
+  fetchedAt       DateTime @default(now())
+
+  expertResults ExpertResult[]
+  llmHoroscopes LlmHoroscope[]
+
+  @@unique([city, weatherDate])
+  @@index([city, weatherDate])
+}
+
+model ExpertResult {
+  id                  String      @id @default(cuid())
+  weatherId           String
+  weather             CityWeather @relation(fields: [weatherId], references: [id], onDelete: Cascade)
+  transportsKey       String
+  transportsInputJson String
+  resultJson          String
+  createdAt           DateTime    @default(now())
+
+  llmHoroscopes LlmHoroscope[]
+
+  @@unique([weatherId, transportsKey])
+}
+
+model LlmHoroscope {
+  id              String       @id @default(cuid())
+  weatherId       String
+  weather         CityWeather  @relation(fields: [weatherId], references: [id], onDelete: Cascade)
+  expertId        String
+  expert          ExpertResult @relation(fields: [expertId], references: [id], onDelete: Cascade)
+  zodiacSign      String
+  birthYear       Int
+  requestKey      String
+  source          String
+  model           String?
+  transportsJson  String
+  assessmentsJson String
+  horoscopeJson   String
+  createdAt       DateTime     @default(now())
+
+  @@unique([requestKey])
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isIP } from "node:net";
+import { prisma } from "@/lib/prisma";
 
 const responseSchema = z.object({
   success: z.boolean().optional(),
@@ -70,4 +71,62 @@ export async function hashIp(ip: string): Promise<string> {
   const data = new TextEncoder().encode(`${ip}:${process.env.IP_HASH_SALT ?? "development-salt"}`);
   const digest = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export function getGeolocationProvider(): string {
+  return process.env.IP_GEOLOCATION_URL ?? "https://ipwho.is";
+}
+
+export async function getOrCreateIpLocation(ip: string) {
+  const ipHash = await hashIp(ip);
+  const provider = getGeolocationProvider();
+  const existing = await prisma.ipLocation.findUnique({
+    where: { ipHash_provider: { ipHash, provider } }
+  });
+  if (existing) {
+    return {
+      ipHash,
+      provider,
+      latitude: existing.latitude,
+      longitude: existing.longitude,
+      accuracy: existing.accuracy
+    };
+  }
+
+  const location = await geolocateIp(ip);
+  try {
+    const created = await prisma.ipLocation.create({
+      data: {
+        ipHash,
+        provider,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracy
+      }
+    });
+    return {
+      ipHash,
+      provider,
+      latitude: created.latitude,
+      longitude: created.longitude,
+      accuracy: created.accuracy
+    };
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "P2002") {
+      const raced = await prisma.ipLocation.findUnique({
+        where: { ipHash_provider: { ipHash, provider } }
+      });
+      if (raced) {
+        return {
+          ipHash,
+          provider,
+          latitude: raced.latitude,
+          longitude: raced.longitude,
+          accuracy: raced.accuracy
+        };
+      }
+    }
+    throw error;
+  }
 }
