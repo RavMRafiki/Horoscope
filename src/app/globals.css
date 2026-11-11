@@ -519,10 +519,12 @@ h3 {
   perspective: 1200px;
   width: 100%;
   max-width: 360px;
+  height: 760px;
 }
 .tarot-card {
   position: relative;
   width: 100%;
+  height: 100%;
   border-radius: 16px;
   background: linear-gradient(to bottom, #101423, #0c0f1a 50%, #070910);
   border: 2px solid rgba(230, 195, 116, 0.5);
@@ -566,19 +568,21 @@ h3 {
   z-index: 10;
   border: 1px solid rgba(230, 195, 116, 0.3);
   border-radius: 12px;
-  padding: 14px;
+  padding: 12px;
   background: rgba(10, 13, 22, 0.7);
   backdrop-filter: blur(4px);
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: 8px;
+  overflow: hidden;
 }
 .tarot-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(230, 195, 116, 0.25);
-  padding-bottom: 10px;
+  padding-bottom: 8px;
 }
 .tarot-arcana-label {
   color: rgba(230, 195, 116, 0.7);
@@ -608,10 +612,10 @@ h3 {
 }
 .tarot-hero {
   position: relative;
-  margin: 12px 0;
+  margin: 0;
   border-radius: 10px;
   border: 1px solid rgba(230, 195, 116, 0.3);
-  padding: 18px 10px 14px;
+  padding: 14px 10px 12px;
   text-align: center;
   overflow: hidden;
   background-color: #0b0c13;
@@ -620,14 +624,18 @@ h3 {
     var(--hero-image, linear-gradient(to bottom, #1b1c2b, #0b0c13));
   background-size: cover;
   background-position: center;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .tarot-hero::before {
   content: none;
 }
 .tarot-icon-wrap {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 58px;
+  height: 58px;
   margin: 0 auto 6px;
   border-radius: 50%;
   border: 1px solid rgba(230, 195, 116, 0.5);
@@ -635,60 +643,78 @@ h3 {
   align-items: center;
   justify-content: center;
   color: #e6c374;
-  font-size: 30px;
+  font-size: 28px;
   background: rgba(230, 195, 116, 0.06);
   box-shadow: 0 0 18px rgba(230, 195, 116, 0.15);
+  flex-shrink: 0;
 }
 .tarot-transport {
   position: relative;
-  margin: 4px 0 2px;
+  margin: 2px 0 2px;
   font-family: var(--font-cinzel), "Cinzel", serif;
-  font-size: 20px;
+  font-size: 17px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #fef3c7;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 .tarot-archetype {
   position: relative;
   margin: 0;
   font-family: var(--font-cinzel), "Cinzel", serif;
-  font-size: 13px;
+  font-size: 12px;
   font-style: italic;
   color: rgba(230, 195, 116, 0.9);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 .tarot-badges {
   display: grid;
   gap: 6px;
-  margin-bottom: 12px;
-  font-size: 11px;
+  margin: 0;
+  font-size: 10px;
+  grid-template-rows: 1fr 1fr;
+  min-height: 76px;
 }
 .tarot-badge-row {
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(230, 195, 116, 0.2);
+  min-height: 0;
+  overflow: hidden;
 }
 .tarot-badge-label {
   color: #e6c374;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 10px;
-  min-width: 56px;
+  font-size: 9px;
+  min-width: 52px;
   flex-shrink: 0;
 }
 .tarot-badge-value {
   color: #e2e8f0;
   font-weight: 300;
+  font-size: 10px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 .tarot-fields {
   display: grid;
-  gap: 10px;
-  font-size: 12px;
-  flex: 1;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 8px;
+  font-size: 11px;
+  min-height: 0;
+  overflow: hidden;
+}
+.tarot-fields > div {
+  min-height: 0;
+  overflow: hidden;
 }
 .tarot-field-label {
   display: block;
@@ -696,17 +722,19 @@ h3 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 10px;
+  font-size: 9px;
   margin-bottom: 2px;
 }
 .tarot-field-text {
   color: #cbd5e1;
   font-weight: 300;
-  line-height: 1.55;
+  line-height: 1.35;
+  font-size: 11px;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 .tarot-warning {
-  padding: 8px 10px;
+  padding: 6px 8px;
   border-radius: 8px;
   background: rgba(245, 158, 11, 0.1);
   border-left: 2px solid #fbbf24;
@@ -719,7 +747,7 @@ h3 {
   color: rgba(254, 243, 199, 0.9);
 }
 .tarot-compat {
-  padding-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid rgba(230, 195, 116, 0.15);
 }
 .tarot-compat .tarot-field-label {
@@ -729,8 +757,8 @@ h3 {
   color: #94a3b8;
 }
 .tarot-footer {
-  margin-top: 12px;
-  padding-top: 8px;
+  margin: 0;
+  padding-top: 6px;
   text-align: center;
   font-size: 10px;
   color: rgba(230, 195, 116, 0.4);
