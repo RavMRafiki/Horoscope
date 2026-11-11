@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa6";
 import type { HoroscopeItem } from "@/types/horoscope";
 import { handleCardLeave, handleCardMove, toRoman } from "@/lib/utils";
+import { AutoFitText } from "./AutoFitText";
 
 const TRANSPORT_ICONS: Record<string, IconType> = {
   pieszo: FaPersonWalking,
@@ -85,33 +86,57 @@ export function TarotCard({ item }: { item: HoroscopeItem }) {
             <div className="tarot-icon-wrap">
               <Icon aria-hidden="true" />
             </div>
-            <h2 className="tarot-transport">{item.transport}</h2>
-            <p className="tarot-archetype">{item.archetype}</p>
+            <AutoFitText as="h2" className="tarot-transport" max={20} min={12}>
+              {item.transport}
+            </AutoFitText>
+            <AutoFitText as="p" className="tarot-archetype" max={13} min={9}>
+              {item.archetype}
+            </AutoFitText>
           </div>
 
           <div className="tarot-badges">
             <div className="tarot-badge-row">
               <span className="tarot-badge-label">Żywioł</span>
-              <span className="tarot-badge-value">{item.element}</span>
+              <AutoFitText
+                as="span"
+                className="tarot-badge-value"
+                max={11}
+                min={8}
+              >
+                {item.element}
+              </AutoFitText>
             </div>
             <div className="tarot-badge-row">
               <span className="tarot-badge-label">Patron</span>
-              <span className="tarot-badge-value">{item.patronPlanet}</span>
+              <AutoFitText
+                as="span"
+                className="tarot-badge-value"
+                max={11}
+                min={8}
+              >
+                {item.patronPlanet}
+              </AutoFitText>
             </div>
           </div>
 
           <div className="tarot-fields">
-            <div>
+            <div className="tarot-field tarot-field-aura">
               <span className="tarot-field-label">Aura</span>
-              <p className="tarot-field-text">{item.aura}</p>
+              <AutoFitText as="p" className="tarot-field-text" max={12} min={9}>
+                {item.aura}
+              </AutoFitText>
             </div>
-            <div className="tarot-warning">
+            <div className="tarot-warning tarot-field tarot-field-warning">
               <span className="tarot-field-label">⚠ Przestroga</span>
-              <p className="tarot-field-text">{item.warning}</p>
+              <AutoFitText as="p" className="tarot-field-text" max={12} min={9}>
+                {item.warning}
+              </AutoFitText>
             </div>
-            <div className="tarot-compat">
+            <div className="tarot-compat tarot-field tarot-field-compat">
               <span className="tarot-field-label">Kompatybilność kosmiczna</span>
-              <p className="tarot-field-text">{item.cosmicCompatibility}</p>
+              <AutoFitText as="p" className="tarot-field-text" max={12} min={9}>
+                {item.cosmicCompatibility}
+              </AutoFitText>
             </div>
           </div>
 
