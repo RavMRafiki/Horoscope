@@ -9,6 +9,7 @@ import {
   transportOptions,
   zodiacSigns,
 } from "@/lib/horoscope";
+import { suggestTransport } from "@/lib/transport-expert";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -57,10 +58,24 @@ export async function POST(request: Request) {
       nearest.city.latitude,
       nearest.city.longitude,
     );
+    const transportExpert = suggestTransport(
+      {
+        current: weather.current,
+        hourly: weather.hourly,
+        daily: weather.daily,
+      },
+      { modes: input.data.transports },
+    );
+    const filteredAssessments =
+      transportExpert.suggestions.length > 0
+        ? transportExpert.suggestions
+        : transportExpert.ranking;
+    const filteredTransports = filteredAssessments.map((assessment) => assessment.mode);
     let horoscope;
     try {
       horoscope = await generateHoroscope({
-        transports: input.data.transports,
+        transports: filteredTransports,
+        transportAssessments: filteredAssessments,
         zodiacSign: input.data.zodiacSign,
         birthYear: input.data.birthYear,
         city: nearest.city.city,
@@ -72,7 +87,7 @@ export async function POST(request: Request) {
         horoscopeError,
       );
       horoscope = createFallbackHoroscope({
-        transports: input.data.transports,
+        transports: filteredTransports,
         zodiacSign: input.data.zodiacSign,
         birthYear: input.data.birthYear,
         city: nearest.city.city,
@@ -122,6 +137,7 @@ export async function POST(request: Request) {
         hourly: weather.hourly,
         daily: weather.daily,
       },
+      transportExpert,
       horoscope,
     });
   } catch (error) {

@@ -1,10 +1,44 @@
 import { z } from "zod";
+import type { OpenMeteoResponse } from "./transport-expert";
 
 const weatherSchema = z.object({
   timezone: z.string(),
-  current: z.record(z.unknown()),
-  hourly: z.record(z.unknown()),
-  daily: z.record(z.unknown())
+  current: z.object({
+    time: z.string(),
+    interval: z.number().optional(),
+    temperature_2m: z.number(),
+    relative_humidity_2m: z.number(),
+    apparent_temperature: z.number(),
+    is_day: z.number().optional(),
+    precipitation: z.number(),
+    rain: z.number().optional(),
+    showers: z.number().optional(),
+    snowfall: z.number().optional(),
+    weather_code: z.number(),
+    wind_speed_10m: z.number(),
+    wind_gusts_10m: z.number(),
+  }),
+  hourly: z.object({
+    time: z.array(z.string()),
+    temperature_2m: z.array(z.number()),
+    relative_humidity_2m: z.array(z.number()),
+    apparent_temperature: z.array(z.number()),
+    precipitation_probability: z.array(z.number()).optional(),
+    precipitation: z.array(z.number()),
+    rain: z.array(z.number()).optional(),
+    showers: z.array(z.number()).optional(),
+    snowfall: z.array(z.number()).optional(),
+    weather_code: z.array(z.number()),
+    visibility: z.array(z.number()).optional(),
+    wind_speed_10m: z.array(z.number()),
+    wind_gusts_10m: z.array(z.number()),
+    is_day: z.array(z.number()).optional(),
+  }),
+  daily: z.object({
+    time: z.array(z.string()),
+    sunrise: z.array(z.string()),
+    sunset: z.array(z.string()),
+  }),
 });
 
 export async function fetchTodayWeather(latitude: number, longitude: number) {
@@ -47,5 +81,8 @@ export async function fetchTodayWeather(latitude: number, longitude: number) {
   const payload = weatherSchema.parse(await response.json());
   const weatherDate = Array.isArray(payload.daily.time) ? payload.daily.time[0] : null;
   if (typeof weatherDate !== "string") throw new Error("Weather provider returned no local date.");
-  return { ...payload, weatherDate };
+  return { ...payload, weatherDate } as typeof payload & { weatherDate: string };
 }
+
+export type TodayWeather = Awaited<ReturnType<typeof fetchTodayWeather>>;
+export type TransportWeather = Pick<TodayWeather, "current" | "hourly" | "daily"> & OpenMeteoResponse;

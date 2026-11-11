@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ModeAssessment } from "./transport-expert";
 
 export const transportOptions = [
   "pieszo",
@@ -69,6 +70,7 @@ export function createFallbackHoroscope(input: {
 
 export async function generateHoroscope(input: {
   transports: string[];
+  transportAssessments: ModeAssessment[];
   zodiacSign: string;
   birthYear: number;
   city: string;
@@ -86,8 +88,9 @@ export async function generateHoroscope(input: {
   const prompt = `Jesteś lekkim, rozrywkowym horoskopem. Nie przedstawiaj tego jako faktów ani porady.
 Użytkownik: znak zodiaku ${input.zodiacSign}, rok urodzenia ${input.birthYear}.
 Najbliższe miasto: ${input.city}. Dzisiejsza pogoda: ${JSON.stringify(input.weather)}.
-Rozważane środki transportu: ${JSON.stringify(input.transports)}.
+Środki transportu dopuszczone przez eksperta pogodowego (ocena 0–100, 100 = najlepsza pogoda): ${JSON.stringify(input.transportAssessments)}.
 Ułóż wyłącznie podane środki transportu od najlepszego do najgorszego dla dzisiejszej podróży.
+Nie zmieniaj ocen eksperta ani nie dodawaj środków spoza tej listy.
 Dla każdego napisz po jednym krótkim zdaniu o szczęściu, pozytywnej energii i negatywnej energii.
 Zwróć wyłącznie poprawny JSON bez markdownu w formacie:
 {"ranking":[{"transport":"...","rank":1,"happiness":"...","positiveEnergy":"...","negativeEnergy":"..."}]}`;
