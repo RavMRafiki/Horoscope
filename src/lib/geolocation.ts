@@ -37,7 +37,18 @@ type IpLocationEntity = {
   accuracy: number | null;
 };
 
-const IPV4_RESERVED_PREDICATES: Array<(first: number, second: number) => boolean> = [
+const DEFAULT_GEOLOCATION_URL = "https://ipwho.is";
+const GEOLOCATION_TIMEOUT_MS = 10000;
+const GEOLOCATION_TIMEOUT_MESSAGE =
+  "The IP geolocation service did not respond within 10 seconds.";
+const DEFAULT_HASH_SALT = "development-salt";
+const UNKNOWN_IP_CANDIDATE = "unknown";
+
+const browserIpBodySchema = z.object({ ip: z.string().trim() });
+
+const IPV4_RESERVED_PREDICATES: Array<
+  (first: number, second: number) => boolean
+> = [
   (first) => first === 10,
   (first) => first === 127,
   (first) => first === 0,
@@ -47,21 +58,22 @@ const IPV4_RESERVED_PREDICATES: Array<(first: number, second: number) => boolean
 
 const IPV6_RESERVED_PREFIXES = ["fc", "fd", "fe80:"] as const;
 
-const GEOLOCATION_TIMEOUT_MS = 10000;
-const GEOLOCATION_TIMEOUT_MESSAGE =
-  "The IP geolocation service did not respond within 10 seconds.";
-const DEFAULT_GEOLOCATION_URL = "https://ipwho.is";
-const UNKNOWN_IP_CANDIDATE = "unknown";
+function getIpv4Octets(ip: string): [number, number] {
+  const [first, second] = ip.split(".").map(Number);
+  return [first, second];
+}
 
-const browserIpBodySchema = z.object({ ip: z.string().trim() });
-
-function isReservedIpv4(first: number, second: number): boolean {
+function isReservedIpv4(ip: string): boolean {
+  const [first, second] = getIpv4Octets(ip);
   return IPV4_RESERVED_PREDICATES.some((predicate) => predicate(first, second));
 }
 
-function isPrivateOrReservedIpv4(ip: string): boolean {
-  const [first, second] = ip.split(".").map(Number);
-  return isReservedIpv4(first, second);
+function isPublicIpv4(ip: string): boolean {
+  return !isReservedIpv4(ip);
+}
+
+function normalizeIpv6(ip: string): string {
+  return ip.toLowerCase();
 }
 
 function isIpv6Loopback(ip: string): boolean {
@@ -72,16 +84,26 @@ function hasReservedIpv6Prefix(ip: string): boolean {
   return IPV6_RESERVED_PREFIXES.some((prefix) => ip.startsWith(prefix));
 }
 
-function isPrivateOrReservedIpv6(ip: string): boolean {
-  const normalized = ip.toLowerCase();
-  return isIpv6Loopback(normalized) || hasReservedIpv6Prefix(normalized);
+function isReservedIpv6(ip: string): boolean {
+  const normalized = normalizeIpv6(ip);
+  if (isIpv6Loopback(normalized)) return true;
+  return hasReservedIpv6Prefix(normalized);
 }
+
+function isPublicIpv6(ip: string): boolean {
+  return !isReservedIpv6(ip);
+}
+
+const PUBLIC_IP_VALIDATORS: Record<number, (ip: string) => boolean> = {
+  4: isPublicIpv4,
+  6: isPublicIpv6,
+};
 
 export function isPublicIp(ip: string): boolean {
   const version = isIP(ip);
-  if (version === 4) return !isPrivateOrReservedIpv4(ip);
-  if (version === 6) return !isPrivateOrReservedIpv6(ip);
-  return false;
+  const validator = PUBLIC_IP_VALIDATORS[version];
+  if (!validator) return false;
+  return validator(ip);
 }
 
 function parseForwardedIp(headerValue: string | null): string | null {
@@ -89,17 +111,7 @@ function parseForwardedIp(headerValue: string | null): string | null {
   return firstValue || null;
 }
 
-function isUnknownCandidate(candidate: string): boolean {
-  return candidate === UNKNOWN_IP_CANDIDATE;
-}
-
-function isUsablePublicIpCandidate(candidate: string | null): candidate is string {
-  if (!candidate) return false;
-  if (isUnknownCandidate(candidate)) return false;
-  return isPublicIp(candidate);
-}
-
-function getHeaderIpCandidate(request: Request): string | null {
+function selectHeaderIpCandidate(request: Request): string | null {
   const forwardedCandidate = parseForwardedIp(
     request.headers.get("x-forwarded-for"),
   );
@@ -107,8 +119,20 @@ function getHeaderIpCandidate(request: Request): string | null {
   return request.headers.get("x-real-ip");
 }
 
+function isUnknownCandidate(candidate: string): boolean {
+  return candidate === UNKNOWN_IP_CANDIDATE;
+}
+
+function isUsablePublicIpCandidate(
+  candidate: string | null,
+): candidate is string {
+  if (!candidate) return false;
+  if (isUnknownCandidate(candidate)) return false;
+  return isPublicIp(candidate);
+}
+
 export function getClientIp(request: Request): string | null {
-  const candidate = getHeaderIpCandidate(request);
+  const candidate = selectHeaderIpCandidate(request);
   if (!isUsablePublicIpCandidate(candidate)) return null;
   return candidate;
 }
@@ -143,13 +167,19 @@ function isTimeoutError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "TimeoutError";
 }
 
-async function fetchGeolocationResponse(ip: string): Promise<Response> {
+function createGeolocationRequestInit(): RequestInit {
+  return {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(GEOLOCATION_TIMEOUT_MS),
+    cache: "no-store",
+  };
+}
+
+async function queryGeolocationProvider(ip: string): Promise<Response> {
+  const url = buildGeolocationUrl(ip);
+  const init = createGeolocationRequestInit();
   try {
-    return await fetch(buildGeolocationUrl(ip), {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(GEOLOCATION_TIMEOUT_MS),
-      cache: "no-store",
-    });
+    return await fetch(url, init);
   } catch (error) {
     if (isTimeoutError(error)) {
       throw new Error(GEOLOCATION_TIMEOUT_MESSAGE);
@@ -175,13 +205,20 @@ function hasCoordinates(
   return payload.latitude !== undefined && payload.longitude !== undefined;
 }
 
-function toGeolocationResult(payload: GeolocationPayload): GeolocationResult {
+function assertProviderAccepted(payload: GeolocationPayload): void {
   if (payload.success === false) {
     throw new Error("IP geolocation provider rejected the address.");
   }
-  if (!hasCoordinates(payload)) {
-    throw new Error("IP geolocation provider returned no coordinates.");
-  }
+}
+
+function assertPayloadHasCoordinates(payload: GeolocationPayload): void {
+  if (hasCoordinates(payload)) return;
+  throw new Error("IP geolocation provider returned no coordinates.");
+}
+
+function normalizeGeolocationPayload(
+  payload: GeolocationPayload & { latitude: number; longitude: number },
+): GeolocationResult {
   return {
     latitude: payload.latitude,
     longitude: payload.longitude,
@@ -189,16 +226,27 @@ function toGeolocationResult(payload: GeolocationPayload): GeolocationResult {
   };
 }
 
+function toGeolocationResult(payload: GeolocationPayload): GeolocationResult {
+  assertProviderAccepted(payload);
+  assertPayloadHasCoordinates(payload);
+  return normalizeGeolocationPayload(
+    payload as GeolocationPayload & { latitude: number; longitude: number },
+  );
+}
+
 export async function geolocateIp(ip: string): Promise<GeolocationResult> {
-  const response = await fetchGeolocationResponse(ip);
+  const response = await queryGeolocationProvider(ip);
   ensureGeolocationResponseOk(response);
   const payload = await parseGeolocationPayload(response);
   return toGeolocationResult(payload);
 }
 
+function getIpHashSalt(): string {
+  return process.env.IP_HASH_SALT ?? DEFAULT_HASH_SALT;
+}
+
 export async function hashIp(ip: string): Promise<string> {
-  const salt = process.env.IP_HASH_SALT ?? "development-salt";
-  const data = new TextEncoder().encode(`${ip}:${salt}`);
+  const data = new TextEncoder().encode(`${ip}:${getIpHashSalt()}`);
   const digest = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(digest), (byte) =>
     byte.toString(16).padStart(2, "0"),
@@ -260,13 +308,17 @@ async function resolveIpLocationRace(
   return findIpLocation(key);
 }
 
-export async function getOrCreateIpLocation(
-  ip: string,
-): Promise<IpLocationRecord> {
-  const key: IpLocationKey = {
+async function buildIpLocationKey(ip: string): Promise<IpLocationKey> {
+  return {
     ipHash: await hashIp(ip),
     provider: getGeolocationProvider(),
   };
+}
+
+export async function getOrCreateIpLocation(
+  ip: string,
+): Promise<IpLocationRecord> {
+  const key = await buildIpLocationKey(ip);
 
   const existing = await findIpLocation(key);
   if (existing) return existing;
