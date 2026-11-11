@@ -41,7 +41,7 @@ export function ZodiacStep({
 }) {
   return (
     <div className="step">
-      <h2>Jaki jest Twój znak?</h2>
+      <h2>Jaki jest twój gwiezdny patron?</h2>
       <p className="step-hint">Wybierz znak zodiaku.</p>
       <div className="icon-grid zodiac-icons">
         {zodiacSigns.map((sign) => {

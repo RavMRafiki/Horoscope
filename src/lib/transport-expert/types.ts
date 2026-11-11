@@ -16,8 +16,6 @@ export const TRANSPORT_MODES = [
 ] as const;
 
 export type TransportMode = (typeof TRANSPORT_MODES)[number];
-
-/** Podzbiór odpowiedzi Open-Meteo, którego używa model. */
 export interface OpenMeteoResponse {
   current?: {
     time: string;
@@ -59,11 +57,8 @@ export interface OpenMeteoResponse {
 }
 
 export interface WeatherContext {
-  /** Które środki oceniać (np. te dostępne dla użytkownika). Domyślnie wszystkie. */
   modes?: readonly TransportMode[];
-  /** Lokalny czas "YYYY-MM-DDTHH:mm", od którego oceniamy pogodę. Domyślnie `current.time`. */
   at?: string;
-  /** Jak daleko w przód patrzymy na pogodę, w minutach. Domyślnie 60. */
   horizonMinutes?: number;
 }
 
@@ -95,12 +90,9 @@ export interface Penalty {
 
 export interface ModeAssessment {
   mode: TransportMode;
-  /** Ocena pogodowa 0–100 (100 = pogoda w ogóle nie przeszkadza). */
   score: number;
   verdict: Verdict;
-  /** true, gdy zadziałała reguła wykluczająca (wtedy score = 0). */
   blocked: boolean;
-  /** Najważniejsze powody obniżenia oceny albo wykluczenia (po polsku). */
   reasons: string[];
   penalties: Penalty[];
 }
@@ -115,7 +107,6 @@ export interface WeatherSummary {
   gustsKmh: number;
   visibilityM: number;
   isDay: boolean;
-  /** Nasilenie zjawisk 0..1 w oknie oceny. */
   hazards: HazardVector;
 }
 
@@ -123,21 +114,13 @@ export interface Recommendation {
   at: string;
   horizonMinutes: number;
   weather: WeatherSummary;
-  /** Środek z najwyższą oceną (przy remisie – pierwszy w kolejności TRANSPORT_MODES). */
   best: ModeAssessment | null;
-  /** Środki o ocenie do 5 pkt niższej niż najlepsza, bez wykluczonych. To jest "podpowiedź", nie werdykt. */
   suggestions: ModeAssessment[];
-  /**
-   * false, gdy pogoda prawie nie różnicuje środków (rozstęp ocen < 15 pkt) –
-   * wtedy `suggestions` obejmuje praktycznie wszystko i UI może napisać "pogoda nie ogranicza wyboru".
-   */
   weatherMatters: boolean;
-  /** Wszystkie oceniane środki, malejąco; wykluczone na końcu. */
   ranking: ModeAssessment[];
 }
 
 export interface WeatherSample {
-  /** Początek godziny (lokalny ISO). */
   time: string;
   temperature: number;
   apparentTemperature: number;
@@ -150,12 +133,10 @@ export interface WeatherSample {
   windSpeed: number; // km/h
   windGusts: number; // km/h
   isDay: boolean;
-  /** Minimalna temperatura z ostatnich ~6 h (ocena wychłodzenia podłoża). */
   recentMinTemperature: number;
 }
 
 export interface WindowMetrics {
-  /** Agregacja po oknie: 0,5·max + 0,5·średnia (najgorszy moment waży tyle co średnia). */
   hazards: HazardVector;
   peak: HazardVector;
   maxRain: number;

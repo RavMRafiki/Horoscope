@@ -37,11 +37,11 @@ export function OnboardingForm({
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">✦ Energia Podróży ✦</p>
-        <h1 className="arcana-page-title">URBAN ARCANA</h1>
+        <p className="eyebrow">✦ Horoskop Podróży ✦</p>
+        <h1 className="arcana-page-title">AstroCommute</h1>
         <p className="intro">
-          Przejdziemy przez trzy krótkie kroki, aby stworzyć rozrywkowy ranking
-          energii podróży.
+          Wystarczą trzy proste kroki, by sprawdzić, jak dziś układają się
+          gwiazdy dla Twojej trasy.
         </p>
         <section className="onboarding" aria-label="Konfiguracja horoskopu">
           <div className="progress">

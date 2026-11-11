@@ -16,7 +16,7 @@ export function ResultView({
         <div className="arcana-badge">
           <span>✦</span> Horoskop Podróży <span>✦</span>
         </div>
-        <h1 className="arcana-title">URBAN ARCANA</h1>
+        <h1 className="arcana-title">AstroCommute</h1>
         <p className="arcana-subtitle">
           Karty energii Twoich środków transportu — od najlepszej do najgorszej.
           Najedź lub dotknij kartę, aby poczuć jej blask.
@@ -35,7 +35,11 @@ export function ResultView({
       </section>
 
       <p className="arcana-disclaimer">
-        To fikcyjna, rozrywkowa interpretacja — nie jest poradą ani prognozą.
+        Wyniki AstroCommute to zabawa oparta na motywach astrologicznych, a nie
+        algorytm nawigacyjny. Choć gwiazdy mogą sugerować spacer, jeśli ucieka
+        Ci pociąg albo leje deszcz – wybierz to, co podpowiada logika i
+        bezpieczeństwo. Twórcy aplikacji nie odpowiadają za spóźnienia,
+        odjechane autobusy ani kaprysy losu!
       </p>
     </main>
   );

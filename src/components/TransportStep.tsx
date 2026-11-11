@@ -43,7 +43,7 @@ export function TransportStep({
 }) {
   return (
     <div className="step">
-      <h2>Jak rozważasz podróżować?</h2>
+      <h2>Na jaką energię podróży masz dziś przeczucie?</h2>
       <p className="step-hint">Możesz wybrać kilka opcji.</p>
       <div className="icon-grid transport-icons">
         {transportOptions.map((transport) => {
