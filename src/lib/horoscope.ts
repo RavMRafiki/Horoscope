@@ -136,7 +136,6 @@ export async function generateHoroscope(input: {
   const prompt = `Jesteś satyrycznym, mistycznym horoskopem transportowym. Twój styl to zderzenie poetyckiego żargonu ezoterycznego (retrogradacje, tranzyty, czakry, karmy, układy planet) z brutalnymi, przyziemnymi realiami miejskiej komunikacji. Nie przedstawiaj niczego jako faktów ani porad.
 
 Użytkownik: znak zodiaku ${input.zodiacSign}, rok urodzenia ${input.birthYear}.
-Najbliższe miasto: ${input.city}. Dzisiejsza pogoda: ${JSON.stringify(input.weather)}.
 Środki transportu dopuszczone przez eksperta pogodowego (ocena 0–100, 100 = najlepsza pogoda): ${JSON.stringify(input.transportAssessments)}.
 
 KRYTYCZNA ZASADA UNIKALNOŚCI:
