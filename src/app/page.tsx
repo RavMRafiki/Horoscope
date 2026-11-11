@@ -37,9 +37,12 @@ type WeatherResult = {
     ranking: Array<{
       transport: string;
       rank: number;
-      happiness: string;
-      positiveEnergy: string;
-      negativeEnergy: string;
+      archetype: string;
+      element: string;
+      patronPlanet: string;
+      aura: string;
+      warning: string;
+      cosmicCompatibility: string;
     }>;
   };
 };
@@ -297,13 +300,23 @@ export default function Home() {
                 <div>
                   <h4>{item.transport}</h4>
                   <p>
-                    <b>Szczęście:</b> {item.happiness}
+                    <b>{item.archetype}</b>
                   </p>
                   <p>
-                    <b>Pozytywna energia:</b> {item.positiveEnergy}
+                    <b>Żywioł:</b> {item.element}
                   </p>
                   <p>
-                    <b>Negatywna energia:</b> {item.negativeEnergy}
+                    <b>Patron:</b> {item.patronPlanet}
+                  </p>
+                  <p>
+                    <b>Aura:</b> {item.aura}
+                  </p>
+                  <p>
+                    <b>Przestroga:</b> {item.warning}
+                  </p>
+                  <p>
+                    <b>Kompatybilność kosmiczna:</b>{" "}
+                    {item.cosmicCompatibility}
                   </p>
                 </div>
               </article>
