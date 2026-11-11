@@ -1,0 +1,31 @@
+export const transportOptions = [
+  "pieszo",
+  "rower",
+  "hulajnoga elektryczna",
+  "motocykl",
+  "skuter lub motorower",
+  "samochód",
+  "taksówka",
+  "car-sharing",
+  "autobus",
+  "tramwaj",
+  "metro",
+  "pociąg",
+  "prom",
+  "samolot",
+] as const;
+
+export const zodiacSigns = [
+  "Baran",
+  "Byk",
+  "Bliźnięta",
+  "Rak",
+  "Lew",
+  "Panna",
+  "Waga",
+  "Skorpion",
+  "Strzelec",
+  "Koziorożec",
+  "Wodnik",
+  "Ryby",
+] as const;
