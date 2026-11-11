@@ -221,33 +221,15 @@ export async function POST(request: Request) {
       weatherCurrent: weather.current,
     });
 
-    return NextResponse.json({
-      location: {
-        city: nearest.city.city,
-        distanceKm: Math.round(nearest.distanceKm * 10) / 10,
-        coordinates: {
-          latitude: Number(location.latitude.toFixed(2)),
-          longitude: Number(location.longitude.toFixed(2)),
-        },
-      },
-      weather: {
-        date: weather.weatherDate,
-        timezone: weather.timezone,
-        current: weather.current,
-        hourly: weather.hourly,
-        daily: weather.daily,
-      },
-      transportExpert,
-      horoscope,
-    });
+    return NextResponse.json({ horoscope });
   } catch (error) {
-    console.error("Weather request failed", error);
+    console.error("Horoscope request failed", error);
     return NextResponse.json(
       {
         error:
           error instanceof Error
             ? error.message
-            : "Unable to load today's weather.",
+            : "Unable to generate horoscope.",
       },
       { status: 502 },
     );

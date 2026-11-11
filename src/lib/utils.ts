@@ -83,7 +83,7 @@ export async function requestHoroscope(input: {
   birthYear: string;
 }): Promise<WeatherResult> {
   const ip = await detectClientIp();
-  const response = await fetch("/api/weather", {
+  const response = await fetch("/api/horoscope", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
