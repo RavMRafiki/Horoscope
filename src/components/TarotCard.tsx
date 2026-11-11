@@ -15,6 +15,7 @@ import {
   FaTrain,
   FaTrainSubway,
   FaTrainTram,
+  FaTriangleExclamation,
 } from "react-icons/fa6";
 import type { HoroscopeItem } from "@/types/horoscope";
 import { handleCardLeave, handleCardMove, toRoman } from "@/lib/utils";
@@ -127,7 +128,9 @@ export function TarotCard({ item }: { item: HoroscopeItem }) {
               </AutoFitText>
             </div>
             <div className="tarot-warning tarot-field tarot-field-warning">
-              <span className="tarot-field-label">⚠ Przestroga</span>
+              <span className="tarot-field-label">
+                <FaTriangleExclamation aria-hidden="true" /> Przestroga
+              </span>
               <AutoFitText as="p" className="tarot-field-text" max={12} min={9}>
                 {item.warning}
               </AutoFitText>
