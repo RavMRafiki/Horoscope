@@ -67,32 +67,15 @@ export function createFallbackHoroscope(input: {
     typeof input.weather.precipitation === "number"
       ? input.weather.precipitation
       : 0;
-  const sorted = [...input.transports].sort((a, b) => {
-    const score = (transport: string) => {
-      let value =
-        transport === "pociąg" ||
-        transport === "tramwaj" ||
-        transport === "metro"
-          ? 3
-          : 2;
-      if (
-        precipitation > 1 &&
-        ["pieszo", "rower", "hulajnoga elektryczna"].includes(transport)
-      )
-        value -= 2;
-      if (temperature < 5 && transport === "samolot") value += 1;
-      return value;
-    };
-    return score(b) - score(a);
-  });
+
   return {
-    ranking: sorted.map((transport, index) => ({
+    ranking: input.transports.map((transport, index) => ({
       transport,
       rank: index + 1,
       archetype: "Wędrowiec Miejskiej Orbity",
       element: temperature >= 15 ? "Ciepły Asfalt" : "Chłodny Przeciąg",
       patronPlanet: "Merkury w pośpiechu",
-      aura: `Energia ${input.zodiacSign} prowadzi ten środek przez miejską dżunglę ${input.city}.`,
+      aura: `Energia ${input.zodiacSign} prowadzi ${transport} przez ${input.city}.`,
       warning:
         precipitation > 1
           ? "Deszcz kreśli śliską pułapkę na trasie."
@@ -161,10 +144,13 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
   for (const model of models) {
     try {
       response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+          },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {

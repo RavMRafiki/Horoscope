@@ -150,25 +150,24 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      const ipResponse = await fetch("https://api64.ipify.org?format=json", {
-        signal: AbortSignal.timeout(5000),
-        cache: "no-store",
-      });
-      if (!ipResponse.ok)
-        throw new Error(
-          "Nie udało się przygotować rankingu. Spróbuj ponownie.",
-        );
-      const { ip } = (await ipResponse.json()) as { ip?: string };
-      if (!ip)
-        throw new Error(
-          "Nie udało się przygotować rankingu. Spróbuj ponownie.",
-        );
+      let ip: string | undefined;
+      try {
+        const ipResponse = await fetch("https://api64.ipify.org?format=json", {
+          signal: AbortSignal.timeout(5000),
+          cache: "no-store",
+        });
+        if (ipResponse.ok) {
+          ({ ip } = (await ipResponse.json()) as { ip?: string });
+        }
+      } catch {
+        // Fallback to server-side IP detection when browser lookup fails.
+      }
 
       const response = await fetch("/api/weather", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ip,
+          ...(ip ? { ip } : {}),
           transports,
           zodiacSign,
           birthYear: Number(birthYear),
@@ -258,9 +257,11 @@ export default function Home() {
 
                     <div
                       className="tarot-hero"
-                      style={{
-                        ["--hero-image" as any]: `url("${transportHeroImages[item.transport] ?? transportHeroImages.samochód}")`,
-                      }}
+                      style={
+                        {
+                          "--hero-image": `url("${transportHeroImages[item.transport] ?? transportHeroImages.samochód}")`,
+                        } as React.CSSProperties
+                      }
                     >
                       <div className="tarot-icon-wrap">
                         <Icon aria-hidden="true" />
