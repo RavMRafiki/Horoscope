@@ -17,6 +17,7 @@ import {
   type TransportMode,
 } from "@/lib/transport-expert";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -180,6 +181,26 @@ export async function POST(request: Request) {
           "Unable to determine a public IP address. Check your internet connection and try again.",
       },
       { status: 400 },
+    );
+  }
+
+  const rateLimit = checkRateLimit(
+    `horoscope:${ip}`,
+    10,
+    60_000,
+  );
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: "Zbyt wiele żądań. Spróbuj ponownie później." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(rateLimit.retryAfter),
+          "X-RateLimit-Limit": String(rateLimit.limit),
+          "X-RateLimit-Remaining": String(rateLimit.remaining),
+          "X-RateLimit-Reset": String(rateLimit.resetAt),
+        },
+      },
     );
   }
 
