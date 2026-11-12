@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingOverlay } from "./LoadingOverlay";
 import { OnboardingStepContent } from "./OnboardingStepContent";
 import { StepActions } from "./StepActions";
 
@@ -36,6 +37,7 @@ export function OnboardingForm({
 
   return (
     <main className="shell">
+      {loading && <LoadingOverlay />}
       <section className="hero">
         <p className="eyebrow">✦ Horoskop Podróży ✦</p>
         <h1 className="arcana-page-title">AstroCommute</h1>
