@@ -1,5 +1,8 @@
 "use client";
 
+import "./OnboardingSteps.css";
+import "./BirthYearStep.css";
+
 export function BirthYearStep({
   value,
   onChange,

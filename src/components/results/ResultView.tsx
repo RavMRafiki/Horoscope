@@ -1,5 +1,6 @@
 "use client";
 
+import "./ResultView.css";
 import type { HoroscopeResult } from "@/lib/domain/horoscope";
 import { TarotCard } from "./TarotCard";
 

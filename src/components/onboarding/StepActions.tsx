@@ -1,5 +1,7 @@
 "use client";
 
+import "./StepActions.css";
+
 export function StepActions({
   step,
   loading,

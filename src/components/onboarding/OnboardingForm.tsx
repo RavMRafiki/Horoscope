@@ -1,5 +1,6 @@
 "use client";
 
+import "./OnboardingForm.css";
 import { LoadingOverlay } from "./LoadingOverlay";
 import { OnboardingStepContent } from "./OnboardingStepContent";
 import { StepActions } from "./StepActions";

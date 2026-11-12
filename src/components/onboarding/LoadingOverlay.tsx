@@ -1,5 +1,6 @@
 "use client";
 
+import "./LoadingOverlay.css";
 import { useEffect, useState } from "react";
 
 const MESSAGES = [

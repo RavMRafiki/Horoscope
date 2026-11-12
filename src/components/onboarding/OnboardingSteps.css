@@ -1,0 +1,59 @@
+.step h2 {
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  font-size: clamp(24px, 4vw, 36px);
+  margin: 0 0 8px;
+  color: #fef3c7;
+  letter-spacing: 0.02em;
+}
+.step-hint {
+  color: var(--muted);
+  margin: 0 0 22px;
+  font-weight: 300;
+}
+.icon-grid {
+  display: grid;
+  gap: 10px;
+}
+.icon-choice {
+  align-items: center;
+  background: linear-gradient(to bottom, #121726, #0c0f1a);
+  border: 1px solid rgba(230, 195, 116, 0.22);
+  border-radius: 14px;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  gap: 9px;
+  justify-content: center;
+  min-height: 100px;
+  padding: 12px 8px;
+  transition:
+    border-color 0.2s,
+    transform 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.icon-choice:hover {
+  border-color: rgba(230, 195, 116, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+}
+.icon-choice.selected {
+  background: linear-gradient(to bottom, rgba(90, 70, 20, 0.35), rgba(30, 24, 10, 0.6));
+  border-color: #e6c374;
+  color: #fde9a6;
+  box-shadow: 0 0 18px rgba(230, 195, 116, 0.18), inset 0 0 12px rgba(230, 195, 116, 0.06);
+}
+.choice-icon {
+  align-items: center;
+  color: #e6c374;
+  display: flex;
+  font-size: 30px;
+  height: 36px;
+  justify-content: center;
+  line-height: 1;
+}
+.choice-icon.zodiac {
+  font-size: 38px;
+}

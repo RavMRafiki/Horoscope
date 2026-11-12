@@ -1,0 +1,8 @@
+.transport-icons {
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+}
+@media (max-width: 520px) {
+  .transport-icons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

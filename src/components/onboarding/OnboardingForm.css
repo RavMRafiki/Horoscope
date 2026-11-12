@@ -1,0 +1,77 @@
+.shell {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 6vh 24px 72px;
+}
+.hero {
+  border: 1px solid rgba(230, 195, 116, 0.3);
+  border-radius: 20px;
+  background: linear-gradient(to bottom, rgba(16, 20, 35, 0.85), rgba(7, 9, 16, 0.9));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(230, 195, 116, 0.08);
+  padding: 40px 36px 44px;
+  backdrop-filter: blur(6px);
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(230, 195, 116, 0.3);
+  background: rgba(230, 195, 116, 0.1);
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  margin: 0 0 18px;
+}
+.arcana-page-title {
+  font-family: var(--font-cinzel-deco), "Cinzel Decorative", serif;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-size: clamp(34px, 6vw, 56px);
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, #fff2c4 0%, #e5c170 50%, #ad802c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+.intro {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.65;
+  max-width: 620px;
+  margin: 12px 0 28px;
+  font-weight: 300;
+}
+.onboarding {
+  margin-top: 24px;
+  border: 1px solid rgba(230, 195, 116, 0.2);
+  border-radius: 16px;
+  padding: 24px 22px 20px;
+  background: rgba(10, 13, 22, 0.55);
+}
+.progress {
+  color: rgba(230, 195, 116, 0.85);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin-bottom: 26px;
+  font-family: var(--font-cinzel), "Cinzel", serif;
+}
+.progress i {
+  background: linear-gradient(90deg, #b8892d, #e6c374, #fde9a6);
+  display: block;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+  box-shadow: 0 0 10px rgba(230, 195, 116, 0.35);
+}
+@media (max-width: 520px) {
+  .shell {
+    padding: 40px 16px;
+  }
+}

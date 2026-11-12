@@ -1,5 +1,6 @@
 "use client";
 
+import "./TarotCard.css";
 import type { CSSProperties } from "react";
 import type { IconType } from "react-icons";
 import {

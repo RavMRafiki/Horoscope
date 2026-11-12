@@ -1,0 +1,14 @@
+.step-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 28px;
+}
+@media (max-width: 520px) {
+  .step-actions {
+    justify-content: stretch;
+  }
+  .step-actions button {
+    flex: 1;
+  }
+}

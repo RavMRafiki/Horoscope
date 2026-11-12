@@ -1,5 +1,7 @@
 "use client";
 
+import "./OnboardingSteps.css";
+import "./ZodiacStep.css";
 import type { IconType } from "react-icons";
 import {
   GiAries,

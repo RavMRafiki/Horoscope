@@ -1,0 +1,19 @@
+.year-step {
+  min-height: 220px;
+}
+.year-input {
+  background: linear-gradient(to bottom, #121726, #0c0f1a);
+  border: 1px solid rgba(230, 195, 116, 0.55);
+  border-radius: 12px;
+  color: #fde9a6;
+  font-size: 38px;
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  margin-top: 24px;
+  padding: 16px 18px;
+  width: 220px;
+  box-shadow: inset 0 0 12px rgba(230, 195, 116, 0.08);
+}
+.year-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(230, 195, 116, 0.25);
+}

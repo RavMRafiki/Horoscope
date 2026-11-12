@@ -1,0 +1,91 @@
+.arcana-shell {
+  min-height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+  font-family: var(--font-jakarta), "Plus Jakarta Sans", Arial, sans-serif;
+  color: #e2e8f0;
+  background-color: #06080e;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(30, 42, 74, 0.35) 0%, transparent 65%),
+    radial-gradient(circle at 10% 80%, rgba(46, 28, 12, 0.2) 0%, transparent 50%),
+    radial-gradient(rgba(230, 195, 116, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 28px 28px;
+}
+.arcana-header {
+  text-align: center;
+  padding: 10px 0 28px;
+  border-bottom: 1px solid rgba(230, 195, 116, 0.15);
+  margin-bottom: 28px;
+}
+.arcana-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(230, 195, 116, 0.3);
+  background: rgba(230, 195, 116, 0.1);
+  color: #fde9a6;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  margin-bottom: 10px;
+}
+.arcana-title {
+  font-family: var(--font-cinzel-deco), "Cinzel Decorative", serif;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-size: clamp(32px, 6vw, 54px);
+  margin: 0;
+  background: linear-gradient(135deg, #fff2c4 0%, #e5c170 50%, #ad802c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+.arcana-subtitle {
+  max-width: 640px;
+  margin: 10px auto 0;
+  color: #94a3b8;
+  font-weight: 300;
+}
+.arcana-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+.arcana-reset {
+  background: rgba(230, 195, 116, 0.12);
+  border: 1px solid rgba(230, 195, 116, 0.45);
+  color: #fde9a6;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-cinzel), "Cinzel", serif;
+  letter-spacing: 0.04em;
+}
+.arcana-reset:hover {
+  background: rgba(230, 195, 116, 0.2);
+}
+.arcana-reset:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.arcana-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 340px));
+  gap: 28px;
+  justify-content: center;
+}
+.arcana-disclaimer {
+  text-align: center;
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 28px;
+}
+@media (max-width: 520px) {
+  .arcana-shell { padding: 20px 12px 48px; }
+  .arcana-grid { grid-template-columns: 1fr; }
+}
