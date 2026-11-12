@@ -228,20 +228,14 @@ export async function POST(request: Request) {
         .transports as readonly TransportMode[] as TransportMode[],
       weather,
     });
-    const transportExpert = expert.result;
-    const filteredAssessments =
-      transportExpert.suggestions.length > 0
-        ? transportExpert.suggestions
-        : transportExpert.ranking;
-    const filteredTransports = filteredAssessments.map(
-      (assessment) => assessment.mode,
-    );
+    const transportAssessments = expert.result.ranking;
+    const transports = transportAssessments.map((assessment) => assessment.mode);
 
     const horoscope = await getOrCreateLlmHoroscope({
       weatherId: weather.id,
       expertId: expert.id,
-      transports: filteredTransports,
-      transportAssessments: filteredAssessments,
+      transports,
+      transportAssessments,
       zodiacSign: input.data.zodiacSign,
       birthYear: input.data.birthYear,
       city: nearest.city.city,
