@@ -18,9 +18,12 @@ import {
 } from "@/lib/transport-expert";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { readJsonWithLimit } from "@/lib/request-body";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+const MAX_BODY_BYTES = 4096;
 
 function buildTransportsKey(transports: string[]): string {
   return [...transports].sort().join("|");
@@ -152,7 +155,14 @@ async function getOrCreateLlmHoroscope(input: {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null);
+  const bodyResult = await readJsonWithLimit(request, MAX_BODY_BYTES);
+  if (!bodyResult.ok) {
+    return NextResponse.json(
+      { error: bodyResult.error },
+      { status: bodyResult.status },
+    );
+  }
+  const body = bodyResult.data;
   const input = z
     .object({
       ip: z.string().optional(),
