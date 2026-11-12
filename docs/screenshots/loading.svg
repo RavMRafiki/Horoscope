@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#1e2a4a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#06080e" stop-opacity="1"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff2c4"/>
+      <stop offset="50%" stop-color="#e5c170"/>
+      <stop offset="100%" stop-color="#ad802c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="720" fill="url(#glow)"/>
+  <text x="600" y="270" font-family="Georgia, serif" font-size="64" fill="#e6c374" text-anchor="middle">✦</text>
+  <text x="600" y="340" font-family="Georgia, serif" font-size="40" font-weight="700" fill="url(#gold)" text-anchor="middle">Gwiazdy kreślą Twój horoskop</text>
+  <text x="600" y="392" font-family="Arial, sans-serif" font-size="22" fill="#cbd5e1" text-anchor="middle">Czytam układ gwiazd nad Twoją trasą…</text>
+  <text x="600" y="448" font-family="Georgia, serif" font-size="24" fill="#e6c374" fill-opacity="0.7" text-anchor="middle" letter-spacing="10">☽  ⚝  ☾</text>
+  <text x="600" y="520" font-family="Arial, sans-serif" font-size="15" fill="#64748b" text-anchor="middle">Pełnoekranowy overlay ładowania z cyklicznymi, mistycznymi komunikatami</text>
+</svg>
