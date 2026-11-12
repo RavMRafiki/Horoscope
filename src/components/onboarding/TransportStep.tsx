@@ -15,7 +15,7 @@ import {
   FaTrainSubway,
   FaTrainTram,
 } from "react-icons/fa6";
-import { transportOptions } from "@/lib/horoscope";
+import { transportOptions } from "@/lib/domain/horoscope";
 
 const TRANSPORT_ICONS: Record<string, IconType> = {
   pieszo: FaPersonWalking,

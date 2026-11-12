@@ -17,9 +17,9 @@ import {
   FaTrainTram,
   FaTriangleExclamation,
 } from "react-icons/fa6";
-import type { HoroscopeItem } from "@/types/horoscope";
-import { handleCardLeave, handleCardMove, toRoman } from "@/lib/utils";
-import { AutoFitText } from "./AutoFitText";
+import type { HoroscopeItem } from "@/lib/domain/horoscope";
+import { handleCardLeave, handleCardMove, toRoman } from "@/lib/format";
+import { AutoFitText } from "@/components/ui/AutoFitText";
 
 const TRANSPORT_ICONS: Record<string, IconType> = {
   pieszo: FaPersonWalking,

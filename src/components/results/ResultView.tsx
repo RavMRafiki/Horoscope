@@ -1,13 +1,13 @@
 "use client";
 
-import type { WeatherResult } from "@/types/horoscope";
+import type { HoroscopeResult } from "@/lib/domain/horoscope";
 import { TarotCard } from "./TarotCard";
 
 export function ResultView({
   result,
   onReset,
 }: {
-  result: WeatherResult;
+  result: HoroscopeResult;
   onReset: () => void;
 }) {
   return (

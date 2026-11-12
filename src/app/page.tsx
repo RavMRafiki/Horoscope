@@ -1,8 +1,8 @@
 "use client";
 
 import { useHoroscope } from "@/hooks/useHoroscope";
-import { ResultView } from "@/components/ResultView";
-import { OnboardingForm } from "@/components/OnboardingForm";
+import { ResultView } from "@/components/results/ResultView";
+import { OnboardingForm } from "@/components/onboarding/OnboardingForm";
 
 export default function Home() {
   const h = useHoroscope();

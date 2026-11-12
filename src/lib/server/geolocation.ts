@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isIP } from "node:net";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/server/prisma";
 
 const responseSchema = z.object({
   success: z.boolean().optional(),

@@ -15,7 +15,7 @@ import {
   GiTaurus,
   GiVirgo,
 } from "react-icons/gi";
-import { zodiacSigns } from "@/lib/horoscope";
+import { zodiacSigns } from "@/lib/domain/horoscope";
 
 const ZODIAC_ICONS: Record<string, IconType> = {
   Baran: GiAries,

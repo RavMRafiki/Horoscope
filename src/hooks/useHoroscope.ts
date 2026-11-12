@@ -1,13 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import type { WeatherResult } from "@/types/horoscope";
-import {
-  isOnboardingValid,
-  requestErrorMessage,
-  requestHoroscope,
-  validateStep,
-} from "@/lib/utils";
+import type { HoroscopeResult } from "@/lib/domain/horoscope";
+import { requestErrorMessage, requestHoroscope } from "@/lib/api/horoscope-client";
+import { isOnboardingValid, validateStep } from "@/lib/onboarding";
 
 const LAST_STEP = 2;
 const INCOMPLETE_FORM_ERROR = "Wybierz transport, znak zodiaku i rok urodzenia.";
@@ -17,7 +13,7 @@ export function useHoroscope() {
   const [zodiacSign, setZodiacSign] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [onboardingStep, setOnboardingStep] = useState(0);
-  const [result, setResult] = useState<WeatherResult | null>(null);
+  const [result, setResult] = useState<HoroscopeResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { OpenMeteoResponse } from "./transport-expert";
-import { prisma } from "@/lib/prisma";
+import type { OpenMeteoResponse } from "@/lib/domain/transport-expert";
+import { prisma } from "@/lib/server/prisma";
 
 const weatherSchema = z.object({
   timezone: z.string(),
