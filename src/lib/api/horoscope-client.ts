@@ -2,7 +2,14 @@
 
 import type { HoroscopeResult } from "@/lib/domain/horoscope";
 
-const horoscopeCache = new Map<string, HoroscopeResult>();
+const CACHE_TTL_MS = 60 * 60 * 1000;
+
+type CacheEntry = {
+  value: HoroscopeResult;
+  expiresAt: number;
+};
+
+const horoscopeCache = new Map<string, CacheEntry>();
 let cachedClientIp: string | null | undefined;
 
 export async function detectClientIp(): Promise<string | undefined> {
@@ -50,8 +57,11 @@ export async function requestHoroscope(input: {
 }): Promise<HoroscopeResult> {
   const key = horoscopeCacheKey(input);
   const cached = horoscopeCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
   if (cached) {
-    return cached;
+    horoscopeCache.delete(key);
   }
 
   const ip = await detectClientIp();
@@ -71,6 +81,6 @@ export async function requestHoroscope(input: {
       body.error ?? "Nie udało się przygotować rankingu. Spróbuj ponownie.",
     );
   }
-  horoscopeCache.set(key, body);
+  horoscopeCache.set(key, { value: body, expiresAt: Date.now() + CACHE_TTL_MS });
   return body;
 }
