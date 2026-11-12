@@ -9,7 +9,7 @@ export type RateLimitResult = {
   retryAfter: number;
 };
 
-const LIMIT = 10;
+const LIMIT = 3;
 const WINDOW_MS = 60_000;
 const REDIS_RETRY_COOLDOWN_MS = 30_000;
 
