@@ -27,7 +27,8 @@ Next.js (App Router) app that generates a playful, astrology-themed ranking of t
 
 ## Tech Stack
 
-- **Framework:** Next.js 14 (App Router), React 18, TypeScript
+- **Framework:** Next.js 16 (App Router), React 19, TypeScript
+- **Runtime:** Node.js 26 LTS (`.nvmrc`, `.node-version`, `engines.node >=26`)
 - **Data:** Prisma + SQLite, Zod validation
 - **APIs/services:** Open-Meteo, IP geolocation provider (`IP_GEOLOCATION_URL`, default `https://ipwho.is`), optional Gemini, optional Upstash Redis (rate limiting)
 - **UI:** CSS (global + component-scoped files), `react-icons`
