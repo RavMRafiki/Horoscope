@@ -20,6 +20,7 @@ Open `http://localhost:3000`. The browser first reads its public IP through ipif
 - `IP_HASH_SALT` should be set to a long random value in production.
 - `GEMINI_API_KEY` enables the Gemini free-tier horoscope generation.
 - `GEMINI_MODEL` optionally overrides the default `gemini-3.1-flash-lite` model. If the configured model returns 404 or temporary 503, the app tries current supported fallback models.
+- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` configure shared Upstash Redis rate limiting for `POST /api/horoscope` (across instances/processes and serverless). When unset or unavailable, the app falls back to in-memory per-process limiting. Set them to the REST URL/token from your Upstash Redis database.
 
 The server stores an anonymous IP hash, the approximate coordinates, the nearest city, and the complete current-day Open-Meteo response. It does not store the raw IP address.
 

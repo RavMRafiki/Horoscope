@@ -184,11 +184,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const rateLimit = checkRateLimit(
-    `horoscope:${ip}`,
-    10,
-    60_000,
-  );
+  const rateLimit = await checkRateLimit(`horoscope:${ip}`);
   if (!rateLimit.ok) {
     return NextResponse.json(
       { error: "Zbyt wiele żądań. Spróbuj ponownie później." },
