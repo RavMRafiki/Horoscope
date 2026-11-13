@@ -1,3 +1,4 @@
+import "server-only";
 import { findNearestCity } from "@/lib/server/cities";
 import { getOrCreateIpLocation } from "@/lib/server/geolocation";
 import { prisma } from "@/lib/server/prisma";

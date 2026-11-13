@@ -1,3 +1,4 @@
+import "server-only";
 import type { ModeAssessment } from "../transport-expert";
 import { createFallbackHoroscope } from "./fallback";
 import { horoscopeSchema } from "./schema";

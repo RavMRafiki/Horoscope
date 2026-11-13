@@ -1,3 +1,5 @@
+import "server-only";
+
 export type ReadJsonResult =
   | { ok: true; data: unknown }
   | { ok: false; status: 400 | 413; error: string };

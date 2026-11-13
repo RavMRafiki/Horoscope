@@ -1,3 +1,4 @@
+import "server-only";
 import { z } from "zod";
 import { isIP } from "node:net";
 import { prisma } from "@/lib/server/prisma";
