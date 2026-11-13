@@ -42,16 +42,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const ip = await getRequestIp(request, input.data);
-  if (!ip) {
-    return NextResponse.json(
-      {
-        error:
-          "Unable to determine a public IP address. Check your internet connection and try again.",
-      },
-      { status: 400 },
-    );
-  }
+  const ip = (await getRequestIp(request, input.data)) || "fallback-warsaw";
 
   const rateLimit = await checkRateLimit(`horoscope:${ip}`);
   if (!rateLimit.ok) {

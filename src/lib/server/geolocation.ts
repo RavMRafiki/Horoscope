@@ -123,7 +123,9 @@ function selectHeaderIpCandidate(request: Request): string | null {
     request.headers.get("x-forwarded-for"),
   );
   if (forwardedCandidate) return forwardedCandidate;
-  return request.headers.get("x-real-ip");
+  const cfIp = request.headers.get("cf-connecting-ip")?.trim();
+  if (cfIp) return cfIp;
+  return request.headers.get("x-real-ip")?.trim() || null;
 }
 
 function isUnknownCandidate(candidate: string): boolean {
@@ -150,22 +152,24 @@ function extractBrowserIpCandidate(body: unknown): string | null {
   return parsed.data.ip;
 }
 
+export const FALLBACK_WARSAW_IP = "fallback-warsaw";
+
 export async function getRequestIp(
   request: Request,
   body: unknown,
-): Promise<string | null> {
+): Promise<string> {
   const serverIp = getClientIp(request);
   if (serverIp) return serverIp;
 
   const browserCandidate = extractBrowserIpCandidate(body);
   if (isUsablePublicIpCandidate(browserCandidate)) return browserCandidate;
 
-  if (process.env.NODE_ENV === "development") {
-    const localCandidate = selectHeaderIpCandidate(request);
-    return localCandidate || "127.0.0.1";
+  const localCandidate = selectHeaderIpCandidate(request);
+  if (localCandidate && !isUnknownCandidate(localCandidate)) {
+    return localCandidate;
   }
 
-  return null;
+  return FALLBACK_WARSAW_IP;
 }
 
 function getGeolocationBaseUrl(): string {
@@ -266,11 +270,11 @@ export async function geolocateIp(ip: string): Promise<GeolocationResult> {
     return toGeolocationResult(payload);
   } catch (error) {
     console.error(
-      "IP geolocation API failed",
+      "IP geolocation API failed, falling back to Warsaw",
       getGeolocationProviderLabel(),
       error instanceof Error ? error.message : error,
     );
-    throw error;
+    return DEFAULT_FALLBACK_COORDINATES;
   }
 }
 

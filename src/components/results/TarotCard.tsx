@@ -21,11 +21,12 @@ import {
 import type { HoroscopeItem } from "@/lib/domain/horoscope";
 import { handleCardLeave, handleCardMove, toRoman } from "@/lib/format";
 import { AutoFitText } from "@/components/ui/AutoFitText";
+import { ElectricScooterIcon } from "@/components/ui/ElectricScooterIcon";
 
 const TRANSPORT_ICONS: Record<string, IconType> = {
   pieszo: FaPersonWalking,
   rower: FaBicycle,
-  "hulajnoga elektryczna": FaMotorcycle,
+  "hulajnoga elektryczna": ElectricScooterIcon,
   motocykl: FaMotorcycle,
   "skuter lub motorower": FaMotorcycle,
   samochód: FaCar,

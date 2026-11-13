@@ -18,11 +18,12 @@ import {
   FaTrainTram,
 } from "react-icons/fa6";
 import { transportOptions } from "@/lib/domain/horoscope";
+import { ElectricScooterIcon } from "@/components/ui/ElectricScooterIcon";
 
 const TRANSPORT_ICONS: Record<string, IconType> = {
   pieszo: FaPersonWalking,
   rower: FaBicycle,
-  "hulajnoga elektryczna": FaMotorcycle,
+  "hulajnoga elektryczna": ElectricScooterIcon,
   motocykl: FaMotorcycle,
   "skuter lub motorower": FaMotorcycle,
   samochód: FaCar,
