@@ -3,7 +3,11 @@
 import { useState } from "react";
 import type { HoroscopeResult } from "@/lib/domain/horoscope";
 import { requestErrorMessage, requestHoroscope } from "@/lib/api/horoscope-client";
-import { isOnboardingValid, validateStep } from "@/lib/onboarding";
+import {
+  isOnboardingValid,
+  isValidBirthYear,
+  validateStep,
+} from "@/lib/onboarding";
 
 const LAST_STEP = 2;
 const INCOMPLETE_FORM_ERROR = "Wybierz transport, znak zodiaku i rok urodzenia.";
@@ -54,7 +58,13 @@ export function useHoroscope() {
 
   async function submit() {
     if (!onboardingComplete) {
-      setError(INCOMPLETE_FORM_ERROR);
+      if (birthYear && !isValidBirthYear(birthYear)) {
+        setError(
+          `Podaj poprawny rok urodzenia (1900–${new Date().getFullYear()}).`,
+        );
+      } else {
+        setError(INCOMPLETE_FORM_ERROR);
+      }
       return;
     }
     setLoading(true);

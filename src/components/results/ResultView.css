@@ -71,7 +71,7 @@
 }
 .arcana-reset:disabled {
   opacity: 0.6;
-  cursor: wait;
+  cursor: not-allowed;
 }
 .arcana-grid {
   display: grid;

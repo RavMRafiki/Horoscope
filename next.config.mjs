@@ -19,6 +19,9 @@ const securityHeaders = [
 
 const nextConfig = {
   typedRoutes: true,
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./polish_cities_coordinates.csv"],
+  },
   async headers() {
     return [
       {

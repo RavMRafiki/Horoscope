@@ -10,11 +10,29 @@ export type City = {
 
 let citiesPromise: Promise<City[]> | undefined;
 
-async function loadCities(): Promise<City[]> {
-  const file = await readFile(
+async function readCitiesCsv(): Promise<string> {
+  const candidatePaths = [
     path.join(process.cwd(), "polish_cities_coordinates.csv"),
-    "utf8",
+    path.resolve("./polish_cities_coordinates.csv"),
+    path.join(__dirname, "../../../polish_cities_coordinates.csv"),
+    path.join(__dirname, "polish_cities_coordinates.csv"),
+  ];
+
+  for (const candidate of candidatePaths) {
+    try {
+      return await readFile(/* turbopackIgnore: true */ candidate, "utf8");
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error(
+    `Unable to locate polish_cities_coordinates.csv in candidate paths: ${candidatePaths.join(", ")}`,
   );
+}
+
+async function loadCities(): Promise<City[]> {
+  const file = await readCitiesCsv();
   const rows = file.trim().split(/\r?\n/);
   const [header, ...data] = rows;
   if (header !== "city,latitude,longitude") {

@@ -4,6 +4,12 @@ import { createFallbackHoroscope } from "./fallback";
 import { horoscopeSchema } from "./schema";
 import type { GeneratedHoroscopeResult } from "./types";
 
+function cleanJsonText(raw: string): string {
+  const trimmed = raw.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return fenced ? fenced[1].trim() : trimmed;
+}
+
 export async function generateHoroscope(input: {
   transports: string[];
   transportAssessments: ModeAssessment[];
@@ -101,8 +107,9 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
       const text = payload.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text) {
         try {
+          const cleanedText = cleanJsonText(text);
           return {
-            horoscope: horoscopeSchema.parse(JSON.parse(text)),
+            horoscope: horoscopeSchema.parse(JSON.parse(cleanedText)),
             source: "gemini",
             model,
           };

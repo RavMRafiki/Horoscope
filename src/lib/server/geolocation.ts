@@ -45,6 +45,12 @@ const GEOLOCATION_TIMEOUT_MESSAGE =
 const DEFAULT_HASH_SALT = "development-salt";
 const UNKNOWN_IP_CANDIDATE = "unknown";
 
+export const DEFAULT_FALLBACK_COORDINATES: GeolocationResult = {
+  latitude: 52.2297,
+  longitude: 21.0122,
+  accuracy: null,
+};
+
 const browserIpBodySchema = z.object({ ip: z.string().trim() });
 
 const IPV4_RESERVED_PREDICATES: Array<
@@ -152,8 +158,14 @@ export async function getRequestIp(
   if (serverIp) return serverIp;
 
   const browserCandidate = extractBrowserIpCandidate(body);
-  if (!isUsablePublicIpCandidate(browserCandidate)) return null;
-  return browserCandidate;
+  if (isUsablePublicIpCandidate(browserCandidate)) return browserCandidate;
+
+  if (process.env.NODE_ENV === "development") {
+    const localCandidate = selectHeaderIpCandidate(request);
+    return localCandidate || "127.0.0.1";
+  }
+
+  return null;
 }
 
 function getGeolocationBaseUrl(): string {
@@ -244,6 +256,9 @@ function toGeolocationResult(payload: GeolocationPayload): GeolocationResult {
 }
 
 export async function geolocateIp(ip: string): Promise<GeolocationResult> {
+  if (!isPublicIp(ip)) {
+    return DEFAULT_FALLBACK_COORDINATES;
+  }
   try {
     const response = await queryGeolocationProvider(ip);
     ensureGeolocationResponseOk(response);

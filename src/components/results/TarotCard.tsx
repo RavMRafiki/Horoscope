@@ -44,7 +44,7 @@ const TRANSPORT_HERO_IMAGES: Record<string, string> = {
   rower: "/images/transport/rower.png",
   "hulajnoga elektryczna": "/images/transport/hulajnoga%20elektryczna.png",
   motocykl: "/images/transport/motocykl.png",
-  "skuter lub motorower": "/images/transport/kuter%20lub%20motorower.png",
+  "skuter lub motorower": "/images/transport/skuter%20lub%20motorower.png",
   samochód: "/images/transport/samoch%C3%B3d.png",
   taksówka: "/images/transport/taks%C3%B3wka.png",
   "car-sharing": "/images/transport/car-sharing.png",

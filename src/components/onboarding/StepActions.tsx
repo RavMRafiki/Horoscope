@@ -30,9 +30,10 @@ export function StepActions({
       {isLastStep ? (
         <button
           type="button"
-          className="primary"
+          className={`primary ${loading ? "is-loading" : ""}`}
           onClick={onSubmit}
           disabled={!isFormSubmittable}
+          data-loading={loading ? "true" : undefined}
         >
           {loading ? "Tworzę ranking…" : "Odkryj swoją energię"}
         </button>
