@@ -51,6 +51,7 @@ export function ZodiacStep({
           const isSelected = selected === sign;
           return (
             <button
+              type="button"
               className={`icon-choice ${isSelected ? "selected" : ""}`}
               key={sign}
               onClick={() => onSelect(sign)}

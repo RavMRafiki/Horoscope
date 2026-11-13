@@ -23,12 +23,13 @@ export function StepActions({
   return (
     <div className="step-actions">
       {showPrevious && (
-        <button className="secondary" onClick={onPrevious}>
+        <button type="button" className="secondary" onClick={onPrevious}>
           Wstecz
         </button>
       )}
       {isLastStep ? (
         <button
+          type="button"
           className="primary"
           onClick={onSubmit}
           disabled={!isFormSubmittable}
@@ -36,7 +37,7 @@ export function StepActions({
           {loading ? "Tworzę ranking…" : "Odkryj swoją energię"}
         </button>
       ) : (
-        <button className="primary" onClick={onNext}>
+        <button type="button" className="primary" onClick={onNext}>
           Dalej
         </button>
       )}

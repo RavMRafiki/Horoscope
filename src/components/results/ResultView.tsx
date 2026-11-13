@@ -23,7 +23,7 @@ export function ResultView({
           Najedź na kartę, aby poczuć jej blask.
         </p>
         <div className="arcana-actions">
-          <button className="arcana-reset" onClick={onReset}>
+          <button type="button" className="arcana-reset" onClick={onReset}>
             Zmień wybór i sprawdź ponownie
           </button>
         </div>

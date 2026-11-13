@@ -47,7 +47,14 @@ export function OnboardingForm({
           gwiazdy dla Twojej trasy.
         </p>
         <section className="onboarding" aria-label="Konfiguracja horoskopu">
-          <div className="progress">
+          <div
+            className="progress"
+            role="progressbar"
+            aria-label="Postęp onboardingu"
+            aria-valuemin={1}
+            aria-valuemax={3}
+            aria-valuenow={onboardingStep + 1}
+          >
             <span>KROK {onboardingStep + 1} Z 3</span>
             <i style={{ width: progressWidth }} />
           </div>
@@ -73,7 +80,11 @@ export function OnboardingForm({
         </section>
       </section>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error" role="alert">
+          {error}
+        </div>
+      )}
     </main>
   );
 }

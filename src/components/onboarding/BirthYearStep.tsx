@@ -24,6 +24,7 @@ export function BirthYearStep({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="1990"
+        aria-label="Rok urodzenia"
         autoFocus
       />
     </div>

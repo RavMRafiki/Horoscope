@@ -53,6 +53,7 @@ export function TransportStep({
           const isSelected = selected.includes(transport);
           return (
             <button
+              type="button"
               className={`icon-choice ${isSelected ? "selected" : ""}`}
               key={transport}
               onClick={() => onToggle(transport)}
