@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { OpenMeteoResponse } from "@/lib/domain/transport-expert";
 import { prisma } from "@/lib/server/prisma";
 
 const weatherSchema = z.object({
@@ -147,11 +146,6 @@ export async function fetchTodayWeather(
 }
 
 export type TodayWeather = Awaited<ReturnType<typeof fetchTodayWeather>>;
-export type TransportWeather = Pick<
-  TodayWeather,
-  "current" | "hourly" | "daily"
-> &
-  OpenMeteoResponse;
 
 export type CachedCityWeather = {
   id: string;

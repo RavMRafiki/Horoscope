@@ -131,7 +131,10 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
       status: response.status,
     });
   }
-  console.warn("Gemini unavailable; using local horoscope fallback");
+  console.warn(
+    "Gemini unavailable; using local horoscope fallback",
+    failures.join(", "),
+  );
   return {
     horoscope: createFallbackHoroscope(input),
     source: "fallback",
