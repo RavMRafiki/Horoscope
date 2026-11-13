@@ -53,6 +53,6 @@ export async function readJsonWithLimit(
   try {
     return { ok: true, data: JSON.parse(new TextDecoder().decode(buffer)) };
   } catch {
-    return { ok: true, data: null };
+    return { ok: false, status: 400, error: "Invalid JSON body." };
   }
 }
