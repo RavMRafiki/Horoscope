@@ -20,7 +20,7 @@ export function ResultView({
         <h1 className="arcana-title">AstroCommute</h1>
         <p className="arcana-subtitle">
           Karty energii Twoich środków transportu — od najlepszej do najgorszej.
-          Najedź lub dotknij kartę, aby poczuć jej blask.
+          Najedź na kartę, aby poczuć jej blask.
         </p>
         <div className="arcana-actions">
           <button className="arcana-reset" onClick={onReset}>

@@ -1,4 +1,4 @@
-# AstroCommute (Dzisiaj)
+# AstroCommute
 
 Next.js (App Router) app that generates a playful, astrology-themed ranking of transport modes for today’s trip. Users pick available transport options, a zodiac sign, and birth year; the app resolves their approximate location from IP, finds the nearest Polish city, evaluates weather conditions with a server-side transport expert, and returns a tarot-style ranking (Gemini-backed when configured, with a local fallback).
 
@@ -6,18 +6,20 @@ Next.js (App Router) app that generates a playful, astrology-themed ranking of t
 
 ## Screenshots
 
-| Onboarding | Loading | Results |
-| --- | --- | --- |
-| ![Onboarding flow](docs/screenshots/onboarding.svg) | ![Loading overlay](docs/screenshots/loading.svg) | ![Tarot ranking results](docs/screenshots/results.svg) |
+| Onboarding — transport                                                             | Onboarding — zodiac                                                                      |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| ![Transport step](docs/screenshots/Screenshot%20from%202026-11-13%2001-14-51.png)  | ![Zodiac step](docs/screenshots/Screenshot%20from%202026-11-13%2001-15-05.png)           |
+| **Loading**                                                                        | **Results**                                                                              |
+| ![Loading overlay](docs/screenshots/Screenshot%20from%202026-11-13%2001-15-23.png) | ![Tarot ranking results](docs/screenshots/Screenshot%20from%202026-11-13%2001-17-23.png) |
 
-> SVG mockups in `docs/screenshots/` illustrate the UI; replace them with real captures if desired.
+> Screenshots are captured from the local dev build; the third step (birth year) is omitted.
 
 ## Features
 
 - 3-step onboarding: select transport modes, zodiac sign, and birth year.
 - IP-based approximate geolocation (browser ipify hint + server/proxy IP), matched to the nearest Polish city (`polish_cities_coordinates.csv`, Haversine distance).
 - Weather via Open-Meteo (current/near-term), cached in SQLite through Prisma.
-- Server-side transport expert scores selected modes (0–100) using forecast/conditions and passes assessments to generation.
+- Server-side transport expert scores selected modes (0–100) using forecast/conditions (evaluating temperature, precipitation, wind speed, and mode-specific vulnerability profiles) and passes assessments to generation.
 - Horoscope generation via Gemini (configurable model with fallbacks) or a mode-specific local fallback when unavailable.
 - Tarot-style results view with fixed-layout cards, hover/foil interaction, and adaptive text fitting.
 - Fullscreen mystical loading overlay while generating results.
@@ -28,7 +30,7 @@ Next.js (App Router) app that generates a playful, astrology-themed ranking of t
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript
-- **Runtime:** Node.js 26 LTS (`.nvmrc`, `.node-version`, `engines.node >=26`)
+- **Runtime:** Node.js 26+ (LTS) (`.nvmrc`, `.node-version`, `engines.node >=26`)
 - **Data:** Prisma + SQLite, Zod validation
 - **APIs/services:** Open-Meteo, IP geolocation provider (`IP_GEOLOCATION_URL`, default `https://ipwho.is`), optional Gemini, optional Upstash Redis (rate limiting)
 - **UI:** CSS (global + component-scoped files), `react-icons`
@@ -54,7 +56,7 @@ src/
     onboarding.ts              # onboarding validation helpers
 prisma/                        # schema/migrations (SQLite)
 polish_cities_coordinates.csv  # city coordinates dataset
-docs/screenshots/              # UI screenshots/mockups
+docs/screenshots/              # UI screenshots
 ```
 
 ## Getting Started
@@ -81,15 +83,15 @@ The browser attempts to read its public IP via ipify and sends it to the API as 
 
 Create `.env` from `.env.example`:
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | Prisma database URL (defaults to SQLite in `.env.example`). |
-| `IP_GEOLOCATION_URL` | IP geolocation provider base URL (default `https://ipwho.is`). |
-| `IP_HASH_SALT` | Long random secret for hashing IPs before storage; set a unique value in production. |
-| `GEMINI_API_KEY` | Enables Gemini-backed horoscope generation. If unset/unavailable, local fallback is used. |
-| `GEMINI_MODEL` | Optional model override (default `gemini-3.1-flash-lite`); falls back across supported models on 404/429/503/timeouts. |
-| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL for shared rate limiting (optional). |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token for shared rate limiting (optional). |
+| Variable                   | Purpose                                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`             | Prisma database URL (defaults to SQLite in `.env.example`).                                                            |
+| `IP_GEOLOCATION_URL`       | IP geolocation provider base URL (default `https://ipwho.is`).                                                         |
+| `IP_HASH_SALT`             | Long random secret for hashing IPs before storage; set a unique value in production.                                   |
+| `GEMINI_API_KEY`           | Enables Gemini-backed horoscope generation. If unset/unavailable, local fallback is used.                              |
+| `GEMINI_MODEL`             | Optional model override (default `gemini-3.1-flash-lite`); falls back across supported models on 404/429/503/timeouts. |
+| `UPSTASH_REDIS_REST_URL`   | Upstash Redis REST URL for shared rate limiting (optional).                                                            |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token for shared rate limiting (optional).                                                          |
 
 When Upstash Redis vars are unset or Redis is unavailable, rate limiting falls back to in-memory per-process limiting.
 
@@ -118,12 +120,11 @@ npm run db:generate # generate Prisma client
 - The raw IP address is not stored.
 - Transport choices, zodiac sign, and birth year are included in request processing and cached/generated records.
 
-## Notes
+## Deployment Notes
 
-- Geolocation and weather are approximate; transport rankings are fictional/for fun and not guidance.
-- CSP is not configured (requires nonce/middleware tuning for Next.js App Router); other standard hardening headers are set.
-- `npm audit` may report dependency issues in the current dependency set; review/upgrade as appropriate for your environment.
+- **Self-hosted / Node server / Container:** Works out of the box with local SQLite and in-memory rate limiting. Ensure `IP_HASH_SALT` is set and reverse-proxy headers (`X-Forwarded-For`) are trusted.
+- **Serverless (e.g., Vercel):** Configure `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` for distributed rate limiting, and point Prisma to a hosted database (or libSQL/Turso) since serverless filesystems are ephemeral.
 
 ## Disclaimer
 
-AstroCommute outputs playful, astrology-inspired content. Do not use it as navigation, weather, or safety advice—follow real-world conditions and local rules.
+AstroCommute outputs playful, astrology-inspired content. Do not use it as safety advice—follow real-world conditions and local rules.
