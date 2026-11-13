@@ -235,10 +235,19 @@ function toGeolocationResult(payload: GeolocationPayload): GeolocationResult {
 }
 
 export async function geolocateIp(ip: string): Promise<GeolocationResult> {
-  const response = await queryGeolocationProvider(ip);
-  ensureGeolocationResponseOk(response);
-  const payload = await parseGeolocationPayload(response);
-  return toGeolocationResult(payload);
+  try {
+    const response = await queryGeolocationProvider(ip);
+    ensureGeolocationResponseOk(response);
+    const payload = await parseGeolocationPayload(response);
+    return toGeolocationResult(payload);
+  } catch (error) {
+    console.error(
+      "IP geolocation API failed",
+      getGeolocationProvider(),
+      error instanceof Error ? error.message : error,
+    );
+    throw error;
+  }
 }
 
 function getIpHashSalt(): string {

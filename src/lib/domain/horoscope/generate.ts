@@ -78,8 +78,14 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
     } catch (error) {
       if (error instanceof DOMException && error.name === "TimeoutError") {
         failures.push(`${model}: timeout`);
+        console.warn("Gemini API request failed", { model, reason: "timeout" });
         continue;
       }
+      console.error(
+        "Gemini API request failed",
+        model,
+        error instanceof Error ? error.message : error,
+      );
       throw error;
     }
     if (response.ok) {
@@ -90,6 +96,7 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
         payload = (await response.json()) as typeof payload;
       } catch {
         failures.push(`${model}: invalid JSON`);
+        console.warn("Gemini API returned invalid JSON", { model });
         response = undefined;
         continue;
       }
@@ -103,23 +110,30 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
           };
         } catch {
           failures.push(`${model}: invalid response`);
+          console.warn("Gemini API returned an invalid horoscope", { model });
         }
       } else {
         failures.push(`${model}: empty response`);
+        console.warn("Gemini API returned an empty response", { model });
       }
       response = undefined;
       continue;
     }
     if (![404, 429, 503].includes(response.status)) {
       failures.push(`${model}: HTTP ${response.status}`);
+      console.warn("Gemini API request failed", {
+        model,
+        status: response.status,
+      });
       break;
     }
     failures.push(`${model}: HTTP ${response.status}`);
+    console.warn("Gemini API request failed", {
+      model,
+      status: response.status,
+    });
   }
-  console.warn(
-    "Gemini unavailable; using local horoscope fallback",
-    failures.join(", "),
-  );
+  console.warn("Gemini unavailable; using local horoscope fallback");
   return {
     horoscope: createFallbackHoroscope({
       ...input,

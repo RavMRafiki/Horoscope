@@ -42,7 +42,10 @@ const weatherSchema = z.object({
   }),
 });
 
-export async function fetchTodayWeather(latitude: number, longitude: number) {
+async function requestTodayWeather(
+  latitude: number,
+  longitude: number,
+) {
   const params = new URLSearchParams({
     latitude: latitude.toString(),
     longitude: longitude.toString(),
@@ -126,6 +129,21 @@ export async function fetchTodayWeather(latitude: number, longitude: number) {
   return { ...payload, weatherDate } as typeof payload & {
     weatherDate: string;
   };
+}
+
+export async function fetchTodayWeather(
+  latitude: number,
+  longitude: number,
+): Promise<Awaited<ReturnType<typeof requestTodayWeather>>> {
+  try {
+    return await requestTodayWeather(latitude, longitude);
+  } catch (error) {
+    console.error(
+      "Open-Meteo weather API failed",
+      error instanceof Error ? error.message : error,
+    );
+    throw error;
+  }
 }
 
 export type TodayWeather = Awaited<ReturnType<typeof fetchTodayWeather>>;
