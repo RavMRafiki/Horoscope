@@ -63,7 +63,7 @@ docs/screenshots/              # UI screenshots
 
 ### Prerequisites
 
-- Node.js (LTS recommended)
+- Node.js 26+ (pinned in `.nvmrc` / `.node-version`)
 - npm
 
 ### Setup
@@ -75,7 +75,7 @@ npm run db:push
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. The front-end and the API run as one Next.js app: the UI is served from `/`, and the backend is the route handler at `POST http://localhost:3000/api/horoscope`. No separate API server is needed.
 
 The browser attempts to read its public IP via ipify and sends it to the API as a hint. In deployed environments the server prefers a public IP from trusted proxy headers.
 
@@ -124,6 +124,13 @@ npm run db:generate # generate Prisma client
 
 - **Self-hosted / Node server / Container:** Works out of the box with local SQLite and in-memory rate limiting. Ensure `IP_HASH_SALT` is set and reverse-proxy headers (`X-Forwarded-For`) are trusted.
 - **Serverless (e.g., Vercel):** Configure `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` for distributed rate limiting, and point Prisma to a hosted database (or libSQL/Turso) since serverless filesystems are ephemeral.
+
+## AI-Assisted Development
+
+- **Kilo (`kilo-auto/free`)** was used for the later refactor and hardening pass: splitting the codebase into domain/server/UI modules, moving to `POST /api/horoscope` with Zod validation and a 4 KB payload limit, Upstash/in-memory rate limiting, security headers (incl. HSTS in production), request-body helper, geolocation refactor, client-side result cache, loading overlay, fixed-layout tarot cards (`AutoFitText`), local fallback horoscope flavor, the Node 26 / Next 16 / React 19 / Prisma 7 / ESLint 9 stack upgrade, the README, and local verification (`npm run lint`, `npx tsc --noEmit`, `npm run build`).
+- **GitHub Copilot (auto-selected model)** the initial app implementation and remaining code (onboarding flow, transport expert scoring profiles, tarot UI/styles, city dataset, assets).
+
+All AI-generated code was reviewed, adjusted to the project's conventions, and verified locally; runtime behavior was tested against the real Open-Meteo and geolocation services.
 
 ## Disclaimer
 
