@@ -5,11 +5,9 @@ import {
   getOrFetchCityWeather,
   type CachedCityWeather,
 } from "@/lib/server/weather";
-import {
-  buildHoroscopeRequestKey,
-  generateHoroscope,
-  type Horoscope,
-} from "@/lib/domain/horoscope";
+import { buildHoroscopeRequestKey } from "./request-key";
+import { generateHoroscope } from "./generate";
+import type { Horoscope } from "./schema";
 import {
   suggestTransport,
   type ModeAssessment,
