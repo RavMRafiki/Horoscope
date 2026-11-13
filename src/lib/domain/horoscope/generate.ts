@@ -9,7 +9,6 @@ export async function generateHoroscope(input: {
   zodiacSign: string;
   birthYear: number;
   city: string;
-  weather: Record<string, unknown>;
 }): Promise<GeneratedHoroscopeResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {

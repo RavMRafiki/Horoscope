@@ -92,7 +92,6 @@ async function getOrCreateLlmHoroscope(input: {
   zodiacSign: string;
   birthYear: number;
   city: string;
-  weatherCurrent: CachedCityWeather["current"];
 }): Promise<Horoscope> {
   const configuredModel =
     process.env.GEMINI_MODEL?.trim() || "gemini-3.1-flash-lite";
@@ -120,7 +119,6 @@ async function getOrCreateLlmHoroscope(input: {
     zodiacSign: input.zodiacSign,
     birthYear: input.birthYear,
     city: input.city,
-    weather: input.weatherCurrent as unknown as Record<string, unknown>,
   });
 
   const data = {
@@ -181,6 +179,5 @@ export async function createHoroscopeRanking(
     zodiacSign: input.zodiacSign,
     birthYear: input.birthYear,
     city: nearest.city.city,
-    weatherCurrent: weather.current,
   });
 }

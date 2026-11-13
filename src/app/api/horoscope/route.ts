@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { transportOptions, zodiacSigns } from "@/lib/domain/horoscope";
 import { createHoroscopeRanking } from "@/lib/domain/horoscope/service";
-import type { TransportMode } from "@/lib/domain/transport-expert";
 import { getRequestIp } from "@/lib/server/geolocation";
 import { checkRateLimit } from "@/lib/server/rate-limit";
 import { readJsonWithLimit } from "@/lib/server/request-body";
@@ -71,7 +70,7 @@ export async function POST(request: Request) {
 
   try {
     const horoscope = await createHoroscopeRanking(ip, {
-      transports: input.data.transports as TransportMode[],
+      transports: input.data.transports,
       zodiacSign: input.data.zodiacSign,
       birthYear: input.data.birthYear,
     });
