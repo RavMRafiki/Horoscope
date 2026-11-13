@@ -32,9 +32,12 @@ function isDayFromDaily(daily: OpenMeteoResponse["daily"], isoHourStart: string)
   if (!daily) return true;
   const idx = daily.time.indexOf(isoHourStart.slice(0, 10));
   if (idx < 0) return true;
+  const sunrise = daily.sunrise[idx];
+  const sunset = daily.sunset[idx];
+  if (!sunrise || !sunset) return true;
   // środek godziny jako reprezentant całego przedziału
   const mid = parseLocal(isoHourStart) + HOUR_MS / 2;
-  return mid >= parseLocal(daily.sunrise[idx]) && mid <= parseLocal(daily.sunset[idx]);
+  return mid >= parseLocal(sunrise) && mid <= parseLocal(sunset);
 }
 
 export function buildSamples(weather: OpenMeteoResponse): WeatherSample[] {

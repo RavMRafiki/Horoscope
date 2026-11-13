@@ -156,7 +156,15 @@ export async function getRequestIp(
 }
 
 function getGeolocationBaseUrl(): string {
-  return process.env.IP_GEOLOCATION_URL ?? DEFAULT_GEOLOCATION_URL;
+  return process.env.IP_GEOLOCATION_URL?.trim() || DEFAULT_GEOLOCATION_URL;
+}
+
+function getGeolocationProviderLabel(): string {
+  try {
+    return new URL(getGeolocationBaseUrl()).host;
+  } catch {
+    return "geolocation";
+  }
 }
 
 function buildGeolocationUrl(ip: string): string {
@@ -243,7 +251,7 @@ export async function geolocateIp(ip: string): Promise<GeolocationResult> {
   } catch (error) {
     console.error(
       "IP geolocation API failed",
-      getGeolocationProvider(),
+      getGeolocationProviderLabel(),
       error instanceof Error ? error.message : error,
     );
     throw error;
@@ -251,7 +259,7 @@ export async function geolocateIp(ip: string): Promise<GeolocationResult> {
 }
 
 function getIpHashSalt(): string {
-  return process.env.IP_HASH_SALT ?? DEFAULT_HASH_SALT;
+  return process.env.IP_HASH_SALT?.trim() || DEFAULT_HASH_SALT;
 }
 
 export async function hashIp(ip: string): Promise<string> {

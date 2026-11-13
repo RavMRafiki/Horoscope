@@ -18,18 +18,29 @@ export async function readJsonWithLimit(
     return { ok: false, status: 400, error: "Request body is required." };
   }
 
-  const reader = request.body.getReader();
+  let reader: ReadableStreamDefaultReader<Uint8Array>;
+  try {
+    reader = request.body.getReader();
+  } catch {
+    return { ok: false, status: 400, error: "Unable to read request body." };
+  }
   const chunks: Uint8Array[] = [];
   let received = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    received += value.byteLength;
-    if (received > maxBytes) {
-      await reader.cancel();
-      return { ok: false, status: 413, error: "Payload too large." };
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      received += value.byteLength;
+      if (received > maxBytes) {
+        await reader.cancel().catch(() => undefined);
+        return { ok: false, status: 413, error: "Payload too large." };
+      }
+      chunks.push(value);
     }
-    chunks.push(value);
+  } catch {
+    await reader.cancel().catch(() => undefined);
+    return { ok: false, status: 400, error: "Unable to read request body." };
   }
 
   const buffer = new Uint8Array(received);

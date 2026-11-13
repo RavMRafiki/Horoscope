@@ -86,7 +86,8 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
         model,
         error instanceof Error ? error.message : error,
       );
-      throw error;
+      failures.push(`${model}: network error`);
+      continue;
     }
     if (response.ok) {
       let payload: {

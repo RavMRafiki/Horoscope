@@ -38,7 +38,13 @@ async function loadCities(): Promise<City[]> {
 }
 
 export function getCities(): Promise<City[]> {
-  citiesPromise ??= loadCities();
+  if (!citiesPromise) {
+    citiesPromise = loadCities().catch((error: unknown) => {
+      citiesPromise = undefined;
+      console.error("City dataset failed to load", error);
+      throw error;
+    });
+  }
   return citiesPromise;
 }
 
