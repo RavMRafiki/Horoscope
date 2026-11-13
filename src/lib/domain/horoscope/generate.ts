@@ -14,10 +14,7 @@ export async function generateHoroscope(input: {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return {
-      horoscope: createFallbackHoroscope({
-        ...input,
-        transportAssessments: input.transportAssessments,
-      }),
+      horoscope: createFallbackHoroscope(input),
       source: "fallback",
       model: null,
     };
@@ -136,10 +133,7 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
   }
   console.warn("Gemini unavailable; using local horoscope fallback");
   return {
-    horoscope: createFallbackHoroscope({
-      ...input,
-      transportAssessments: input.transportAssessments,
-    }),
+    horoscope: createFallbackHoroscope(input),
     source: "fallback",
     model: null,
   };

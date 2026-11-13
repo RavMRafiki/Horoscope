@@ -1,4 +1,3 @@
-import type { ModeAssessment } from "../transport-expert";
 import type { Horoscope } from "./schema";
 
 type ModeFlavor = {
@@ -134,40 +133,20 @@ const DEFAULT_FLAVOR: ModeFlavor = {
   cosmicCompatibility: "Harmonia z dobrą pogodą, napięcie z nagłą zmianą warunków.",
 };
 
-function scoreContext(assessment?: ModeAssessment): string {
-  if (!assessment) return "";
-  if (assessment.reasons.length > 0) {
-    return ` Niebiosa odnotowują: ${assessment.reasons[0].toLowerCase()}.`;
-  }
-  if (assessment.blocked) {
-    return " Gwiazdy stawiają tu wyraźny znak ostrzegawczy.";
-  }
-  return "";
-}
-
 export function createFallbackHoroscope(input: {
   transports: string[];
-  transportAssessments?: ModeAssessment[];
   zodiacSign: string;
-  birthYear: number;
-  city: string;
-  weather: Record<string, unknown>;
 }): Horoscope {
-  const assessmentsByMode = new Map<string, ModeAssessment>(
-    (input.transportAssessments ?? []).map((a) => [a.mode, a]),
-  );
-
   return {
     ranking: input.transports.map((transport, index) => {
       const flavor = MODE_FLAVOR[transport] ?? DEFAULT_FLAVOR;
-      const assessment = assessmentsByMode.get(transport);
       return {
         transport,
         rank: index + 1,
         archetype: flavor.archetype,
         element: flavor.element,
         patronPlanet: flavor.patronPlanet,
-        aura: `${flavor.aura} Znak ${input.zodiacSign} prowadzi dziś Twój kurs w ${input.city}.${scoreContext(assessment)}`,
+        aura: `${flavor.aura} Znak ${input.zodiacSign} prowadzi dziś Twój kurs.`,
         warning: flavor.warning,
         cosmicCompatibility: flavor.cosmicCompatibility,
       };
