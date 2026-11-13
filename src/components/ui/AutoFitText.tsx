@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, type ElementType } from "react";
+import { useLayoutEffect, useRef, type ElementType, type ReactNode } from "react";
 
 export function AutoFitText({
   as: Tag = "div",
@@ -11,7 +11,7 @@ export function AutoFitText({
 }: {
   as?: ElementType;
   className?: string;
-  children: React.ReactNode;
+  children: ReactNode;
   max: number;
   min: number;
 }) {
