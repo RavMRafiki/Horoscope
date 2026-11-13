@@ -1,6 +1,15 @@
 "use client";
 
-import { useLayoutEffect, useRef, type ElementType, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type ElementType,
+  type ReactNode,
+} from "react";
+
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export function AutoFitText({
   as: Tag = "div",
@@ -17,7 +26,7 @@ export function AutoFitText({
 }) {
   const ref = useRef<HTMLElement | null>(null);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
 

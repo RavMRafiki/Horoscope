@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const ip = await getRequestIp(request, bodyResult.data);
+  const ip = await getRequestIp(request, input.data);
   if (!ip) {
     return NextResponse.json(
       {
@@ -79,12 +79,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Horoscope request failed", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to generate horoscope.",
-      },
+      { error: "Nie udało się przygotować horoskopu. Spróbuj ponownie później." },
       { status: 502 },
     );
   }

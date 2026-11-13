@@ -1,6 +1,6 @@
 export type ReadJsonResult =
   | { ok: true; data: unknown }
-  | { ok: false; status: 413; error: string };
+  | { ok: false; status: 400 | 413; error: string };
 
 export async function readJsonWithLimit(
   request: Request,
@@ -15,7 +15,7 @@ export async function readJsonWithLimit(
   }
 
   if (!request.body) {
-    return { ok: false, status: 413, error: "Payload too large." };
+    return { ok: false, status: 400, error: "Request body is required." };
   }
 
   const reader = request.body.getReader();

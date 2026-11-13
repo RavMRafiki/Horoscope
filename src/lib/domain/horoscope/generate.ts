@@ -83,9 +83,16 @@ Zwróć wyłącznie poprawny JSON bez formatowania markdown (bez \`\`\`json) w f
       throw error;
     }
     if (response.ok) {
-      const payload = (await response.json()) as {
+      let payload: {
         candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
       };
+      try {
+        payload = (await response.json()) as typeof payload;
+      } catch {
+        failures.push(`${model}: invalid JSON`);
+        response = undefined;
+        continue;
+      }
       const text = payload.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text) {
         try {
